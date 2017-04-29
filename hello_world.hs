@@ -45,7 +45,7 @@ basic comments
 
 -}
 
-{- Data and pattern-matching-}
+{- Ch2: Data and pattern-matching -}
 -- data: declare T + declare T's constructor
 data T = ConstructorT Int
     -- ConstructorT 1 :: T
@@ -109,6 +109,22 @@ self_div a b = case b of
 data PosR = MakePosR { getX :: Double, getY :: Double }
 -- data Vec = MakeVec { getX :: Int, getY :: Int } Multiple defintion
 posr1 = MakePosR 3 4
+
+{- Ch3: List/Recursion -}
+-- data [a] = a : [a] | []
+-- List a = Nil | a : List a
+-- [1, 2, 3] -> 1 : 2 : 3 : []
+sample_l1 = [10, 9..0] -- 10, 9 ... (If use [2, 9..0] -> empty list)
+sample_p4 = sample_l1 !! 4 
+-- !! partial function (!! [] n will cause error)
+-- !!! total function
+totaln :: [a] -> Int -> Maybe a
+totaln [] _ = Nothing
+totaln (x : xs) 0 = Just x
+totaln (x : xs) n = totaln xs (n-1)
+infixl 9 !!!
+(!!!) :: [a] -> Int -> Maybe a
+a !!! b = totaln a b
 
 
 main :: IO()
