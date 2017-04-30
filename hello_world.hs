@@ -85,7 +85,7 @@ v_norm2_pattern v1@(x1 :+ y1) v2@(x2 :+ y2) = sqrt (fromIntegral ((x1 - x2)^2 + 
 data Pos = Cartesian Double Double | Polar Double Double
 
 -- no parameter ctor
-data SelfBool = True | False
+data SelfBool = STrue | SFalse
 match_self_bool :: Bool -> Int
 match_self_bool v = if v then 1
                          else 2
@@ -115,7 +115,9 @@ posr1 = MakePosR 3 4
 -- List a = Nil | a : List a
 -- [1, 2, 3] -> 1 : 2 : 3 : []
 sample_l1 = [10, 9..0] -- 10, 9 ... (If use [2, 9..0] -> empty list)
-sample_p4 = sample_l1 !! 4 
+sample_p4 = sample_l1 !! 4
+-- (:) :: a -> [a] -> [a]
+
 -- !! partial function (!! [] n will cause error)
 -- !!! total function
 totaln :: [a] -> Int -> Maybe a
@@ -123,9 +125,101 @@ totaln [] _ = Nothing
 totaln (x : xs) 0 = Just x
 totaln (x : xs) n = totaln xs (n-1)
 infixl 9 !!!
-(!!!) :: [a] -> Int -> Maybe a
+(!!!) :: [a] -> Int -> Maybe a -- section infix -> simple
 a !!! b = totaln a b
 
+{- Ch4, Ch5: Tuple/Type Inference/High-order Function -}
+-- data (,) a b = (,) a b  Tuple, max 62
+tp1 = (1, 2, 3) :: (Int, Float, Double)
+tp2 = (,,) 1 2 3 :: (Int, Float, Double)
+unit_t = () :: () -- von Neumann Peano
+
+-- high order
+-- (->) :: * -> * -> *  (infixr 0) Parameters: Types, Return: Types -> Type Function
+subscbfiveimpl :: [(Int, a)] -> [a]
+subscbfiveimpl [] = []
+subscbfiveimpl ((i, x) : xs) = case i `rem` 5 of
+                                    0 -> x : subscbfiveimpl xs
+                                    _ -> subscbfiveimpl xs
+
+-- zip
+zip_alt :: [a] -> [b] -> [(a, b)]
+zip_alt [] _ = []
+zip_alt _ [] = []
+zip_alt (x:xs) (y:ys) = (x, y) : zip_alt xs ys
+
+subscbfive :: [a] -> [a]
+subscbfive [] = []
+subscbfive xs = subscbfiveimpl (zip_alt [1..(length xs)] xs)
+
+zip_with :: (a -> b -> c) -> [a] -> [b] -> [c]
+zip_with _ _ [] = []
+zip_with _ [] _ = []
+zip_with f (x : xs) (y : ys) = f x y : zip_with f xs ys
+
+-- curry
+curry_alt :: ((a, b) -> c) -> a -> b -> c
+curry_alt f x y = f (x, y)
+
+uncurry_alt :: (a -> b -> c) -> (a, b) -> c
+uncurry_alt f (x, y) = f x y
+
+-- $ &
+-- ($) :: (a -> b) -> a -> b (infixr 0)
+-- f $ x = f x
+-- replace f (x y z) -> f $ x $ y z
+-- just pipeline
+--      |> = &
+--      <| = $
+
+-- lambda function
+sample_lambda1v = 3 & (\x -> x + 1) & (\x -> x + 2) -- 6
+
+-- .
+-- (.) :: (b -> c) -> (a -> b) -> a -> c  -- Or BCKW B
+-- f . g = \x -> f(g x) (infixr 9)
+from_a_to_b = toEnum . (+1) . fromEnum $ 'a' :: Char -- 'b'
+
+-- where
+where_func :: [a] -> [a]
+where_func xs = a_func $ zip [0..] xs
+    where
+        a_func [] = []
+        a_func ((i, x):xs) = if i `rem` 5 == 0 then x : a_func xs
+                                               else a_func xs
+-- everywhere binding happen can use where
+-- eg: case ... of ... where ... | let ... where ... in ...
+
+-- Alt case conditition : ref: https://wiki.haskell.org/Case#Guards
+-- guard
+guard_func :: (Num a, Ord a, Eq a) => a -> String
+guard_func x
+    | x' < 0 = "negative"
+    | x' == 0 = "zero"
+    | x' > 0 = "positive"
+    | otherwise = "hodouni"
+    where x' = x
+
+multi_way_alt :: (Eq a) => a -> String
+multi_way_alt x = case () of _
+                               | x == x -> "Always True"
+                               | otherwise -> "Always False"
+
+-- point-free (eta-conversion in λ)
+-- α-conversion : \x f x -> \y f y
+-- β-reduction : \x f x z -> f z
+-- η-conversion : \x f x == \x g x -> f == g
+
+nextChar_less :: Char -> Char
+nextChar_less = toEnum . (+1) . fromEnum
+nextChar_full :: Char -> Char
+nextChar_full = toEnum . (+1) . fromEnum
+
+-- (.) . (.) :: (b -> c) -> (a1 -> a -> c) -> a1 -> a -> c
+-- on :: (b -> b -> c) -> (a -> b) -> a -> a -> c
+-- (*) `on` f = \x y -> f x * f y
+
+{- Ch6 List Operation -}
 
 main :: IO()
 main = print(nub [1, 2, 3, 2, 3])  -- Prelude.base.print
