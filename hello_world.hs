@@ -274,6 +274,70 @@ scanr_alt f b (x:xs) =
         ys = scanr_alt f b xs
 
 {- Ch7 Typeclass -}
+data PosTC = CartesianTC Double Double | PolarTC Double Double
+
+-- deriving: auto-derive typeclass
+data PosTCD = CartesianTCD Double Double | PolarTCD Double Double
+    deriving Eq
+
+
+{-
+-- declare typeclass Eq (interface[java] / traits[rust] / require[c++] / CRTP[no need of /=])
+class Eq a where
+    (==), (/=) :: a -> a -> Bool
+    x /= y = not (x == y)
+    x == y = not (x /= y)
+
+-- Interestingly, typeclass can auto-select interface...
+class (Eq a) => Ord a where
+    compare :: a -> a -> Ordering -- data Ordering = LT | EQ | GT
+    (<), (<=), (>=), (>) :: a -> a -> Bool
+    max, min :: a -> a -> a
+    compare x y | x == y = EQ
+                | x <= y = LT
+                | otherwise = GT
+    max...
+    min...
+    <=...
+    <...
+    >=...
+    >...
+-}
+
+-- declare PosTC as instance of Eq (realize (==))
+instance Eq PosTC where
+    CartesianTC x1 y1 == CartesianTC x2 y2 = (x1 == x2) && (y1 == y2)
+    PolarTC x1 y1 == PolarTC x2 y2 = (x1 == x2) && (y1 == y2)
+    CartesianTC x y == PolarTC a r = (x == r * cos a) && (y == r * sin a)
+    PolarTC a r == CartesianTC x y = (x == r * cos a) && (y == r * sin a)
+    
+{-# LANGUAGE InstanceSigs #-}
+{-
+instance Eq A where
+    (==) :: A -> A -> Bool
+    x == y = ...
+-}
+
+-- can-derived typeclass
+-- Eq/Ord/Enum/Bounded/Show/Read
+-- GHC: Functor/Foldable/Traversable/Typeable/Generics
+
+-- Show -> how to print
+-- Read -> how to parse
+read_alt :: (Read a) => String -> a
+read_alt s = case [x | (x, t) <- reads s, ("", "") <- lex t] of
+                [x] -> x
+                [] -> error "PreludeText.read: no parse"
+                _ -> error "PreludeText.read: ambiguous parse"
+
+-- read (show (x :: a)) :: a = x (May not True)
+
+
+
+
+
+
+
 
 
 

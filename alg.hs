@@ -2,6 +2,7 @@ module Alg where
 
 import Data.List
 
+-- For intentive solution sum = sum - xs[i-m] + xs[i]
 min_sub_list :: (Num a, Ord a) => [a] -> Int -> a
 min_sub_list xs m = init_sum + min_diff
     where
