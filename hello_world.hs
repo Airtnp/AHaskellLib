@@ -221,5 +221,61 @@ nextChar_full = toEnum . (+1) . fromEnum
 
 {- Ch6 List Operation -}
 
+-- map
+-- map :: (a -> b) -> [a] -> [b]
+-- map _ [] = []
+-- map f (x : xs) = f x : map f xs 
+
+-- filter
+-- filter f (x : xs) = | f x = x : filter f xs
+                    -- |     = filter f xs
+
+-- foldl (not work on infinite lists)
+-- foldr (work on infinite lists)
+foldr_alt :: (b -> a -> a) -> a -> [b] -> a
+foldr_alt _ a [] = a
+foldr_alt f a (x:xs) = f x $ foldr_alt f a xs
+
+foldl_alt :: (a -> b -> a) -> a -> [b] -> a
+foldl_alt _ a [] = a
+foldl_alt f a (x:xs) = foldl_alt f (f a x) xs
+
+foldl_reverse :: (a -> b -> a) -> a -> [b] -> a
+foldl_reverse f a bs = foldr_alt (\b' a' -> f a' b') a (reverse bs)
+-- save it on the closure, thus gf must match (b -> x -> x) -> x -> [b] -> x
+-- x :: a -> a
+-- gf :: b -> (a -> a) -> (a -> a)
+foldl_foldr :: (a -> b -> a) -> a -> [b] -> a
+foldl_foldr f a bs = foldr_alt (\b g x -> g $ f x b) id bs a
+-- foldl f a bs = f (f z b0) b1 
+--              -> foldr gf id bs a
+--              -> gf b0 (gf b1 id) a
+--              -> gf b1 id (f a b0)
+--              -> id $ f (f a b0) b1
+
+-- for finite lists
+foldr_foldl :: (b -> a -> a) -> a -> [b] -> a  
+foldr_foldl f a bs = foldl_alt (\g b x -> g $ f b x) id bs a
+
+-- use foldl' instead, since foldl is lazy (evaluated at final saturation)
+
+-- scanl
+scanl_alt :: (b -> a -> b) -> b -> [a] -> [b]
+scanl_alt f b ls = b : (
+    case ls of
+        [] -> []
+        x:xs -> scanl f (f b x) xs
+    )
+
+scanr_alt :: (a -> b -> b) -> b -> [a] -> [b]
+scanr_alt f b (x:xs) = 
+        f x (head ys) : ys
+    where
+        ys = scanr_alt f b xs
+
+{- Ch7 Typeclass -}
+
+
+
 main :: IO()
 main = print(nub [1, 2, 3, 2, 3])  -- Prelude.base.print
