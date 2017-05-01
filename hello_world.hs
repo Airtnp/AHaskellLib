@@ -1,9 +1,10 @@
+{-# LANGUAGE Rank2Types #-}
 --
 module Main where
 
 import Data.List
 import Data.Function
-import Control.Applicative
+-- import Control.Applicative -- Compiler slow
 
 {-
 basic comments
@@ -426,6 +427,8 @@ add_one_maybe Nothing = Nothing
 -- To abstract box
 -- class Functor f where
     -- fmap :: (a -> b) -> f a -> f b
+    -- (<$) :: a -> f b -> f a
+    -- (<$) :: fmap . const
 -- instance Functor [] where
 -- instance Functor Maybe where
 -- instance Functor ((,), a) where   -- The box of (a, b) is (,) a
@@ -464,34 +467,95 @@ instance Functor Identity_alt where
 -- Const : Nothing here
 newtype Const_alt a b = Const_alt { getConst_alt :: a }  -- phatom type b
 instance Functor (Const_alt a) where
-    fmap f c = c
+    fmap f (Const_alt v) = Const_alt v      -- Error: Book P116
 
 -- IO: a container(functor)
 
 
-{- Ch12 lense -}
+{- Ch12 lenses -}
+
+-- without lenses
+pr1 = MakePosR 1 2
+pr2 = pr1 {getY = 3}
+-- pr2 = MakePosR {
+        -- getX = getX pr1
+        -- getY = 3
+--}
+getX_PosR :: PosR -> Double
+getX_PosR (MakePosR x _) = x
+
+setX_PosR :: Double -> PosR -> PosR
+setX_PosR x' p = p{ getX = x' }
+
+-- with Lens (unwrapper your functor to apply object and wrapper into container)
+-- LANGUAGE Rank2Types
+type Lens_alt b a = forall f. Functor f => (a -> f a) -> b -> f b -- b.a exists
+-- Then
+xLens_PosR :: Functor f => (Double -> f Double) -> PosR -> f PosR
+-- Or xLens_PosR :: Lens PosR Double
+xLens_PosR f p = fmap (\x' -> setX_PosR x' p) $ f (getX_PosR p)
+-- Or xLens_PosR = fmap (\x' -> p{ getX = x' }) & f (getX p)
+-- getter: getX/setter: \x' -> p{ getX = x' }
+
+-- Then
+-- xLen_PosR (\x -> [x+1, x+2, x+3]) (MakePosR 3 4) -> [PosR{...}, PosR{...}, ...]
+
+-- If we have
+-- view_PosR :: Lens_alt PosR Double -> Double -> Double -- getter
+-- set_PosR :: Lens_alt PosR Double -> Double -> PosR -> PosR -- setter
+-- over_PosR :: Lens_alt PosR Double -> (Double -> Double) -> PosR -> PosR -- transformer
+
+-- over
+-- over :: Functor f => ((a -> f a) -> b -> f b) -> (a -> a) -> b -> b
+-- over :: ((a -> Identity a) -> b -> Identity b) -> (a -> a) -> b -> b
+over_alt :: Lens_alt b a -> (a -> a) -> b -> b
+over_alt lens f x = runIdentity_alt $ lifted x  -- easy eta + beta => point-free
+    where
+        lifted = lens (Identity_alt . f)  -- b -> Indentity b
+
+infixr 4 %~
+(%~) :: Lens_alt b a -> (a -> a) -> b -> b
+(%~) = over_alt
+
+
+-- set
+-- over lens (\_ -> a) p == set lens a p
+-- set :: ((a -> Identity a) -> b -> Identity b) -> a -> b -> b
+set_alt :: Lens_alt b a -> a -> b -> b
+set_alt lens a = over_alt lens (const a)
+
+-- const :: a -> b -> a
+-- const x _ = x
+
+infixr 4 .~
+(.~) :: Lens_alt b a -> a -> b -> b
+(.~) = set_alt
 
 
 
+-- view
+-- view :: ((a -> Const a a) -> b -> Const a b) -> b -> a
+view_alt :: Lens_alt b a -> b -> a
+view_alt lens = getConst_alt . (lens Const_alt)
 
 
+-- Then
+-- yxLens = yLens . xLens 
+-- view yxLens y -> y.x.T
 
+infixl 8 %^
+(%^) :: b -> Lens_alt b a -> a
+x %^ lens = view_alt lens x
+-- (^.) = flip view_alt
 
+-- flip :: (a -> b -> c) -> b -> a -> c
+-- flip x y = f y x
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+{- pipeline
+infixl 1
+(&) :: a -> (a -> b) -> b
+x & f = f x
+-}
 
 
 main :: IO()
