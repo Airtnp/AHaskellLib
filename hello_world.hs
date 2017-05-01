@@ -3,6 +3,7 @@ module Main where
 
 import Data.List
 import Data.Function
+import Control.Applicative
 
 {-
 basic comments
@@ -416,6 +417,78 @@ import qualified X.Y as Z hiding(Type, value...)
 
 
 {- Ch11 Functor -}
+
+-- match maybe box
+add_one_maybe :: Maybe Int -> Maybe Int
+add_one_maybe (Just a) = Just (a + 1)
+add_one_maybe Nothing = Nothing
+
+-- To abstract box
+-- class Functor f where
+    -- fmap :: (a -> b) -> f a -> f b
+-- instance Functor [] where
+-- instance Functor Maybe where
+-- instance Functor ((,), a) where   -- The box of (a, b) is (,) a
+    -- fmap f (x, y) = (x, f y)
+-- instance Functor ((->) a) where   -- The box of a -> b is (->) a
+    -- fmap f fa = f . fa
+    -- fmap = (.) [:t (b -> c) -> (a -> b) -> (a -> c)]
+
+-- Everything is a box (container)
+-- container is a functor
+
+-- Some category theory
+-- category C
+    -- set class ob(C) : object
+    -- set class hom(C) : projection
+    -- binary operation -> : combination of projection
+        -- forall a b c : hom(b, c) x hom(a, b) -> hom(a, c)
+        -- f : hom(a, b) o g : hom(b, c) = g o f
+            -- associativity h o (g o f) = h o g
+            -- identity forall x : object, exist idx : x -> x, forall f : a -> b, idb o f = f = f o ida
+
+-- fmap: C -> D
+    -- ob(C) -> ob(D)
+    -- hom(C) - hom(D)
+    -- fmap id (C) = id (D)
+    -- fmap f o g = fmap(f) o fmap(g)  (isomorphic)
+-- This operation is called lifted (a -> b) -> (f a -> f b)
+-- or from one category -> another category
+
+-- Identity : Id here
+newtype Identity_alt a = Identity_alt { runIdentity_alt :: a }
+instance Functor Identity_alt where
+    fmap f idx = Identity_alt (f $ runIdentity_alt idx)
+    -- or fmap f = Identity_alt . f . runIdentity_alt       -- point-free
+
+-- Const : Nothing here
+newtype Const_alt a b = Const_alt { getConst_alt :: a }  -- phatom type b
+instance Functor (Const_alt a) where
+    fmap f c = c
+
+-- IO: a container(functor)
+
+
+{- Ch12 lense -}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
