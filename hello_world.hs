@@ -399,10 +399,23 @@ undefined_alt = let x = x
 -- force :: NFData a => a -> a
 
 {- Ch10 Module -}
+{-
+module A.B.C (
+    binding,
+    module other,
+    DataType(Ctor1, Ctor2...),  -- export one data DataTyoe
+    AnotherData(..),
+    ClassDef(class1, class2...) -- export one typeclass ClassDef
+    ) where
+
+import X.Y (Type, value...)
+import qualified X.Y as Z  -- import as Z (or just use Y.xxx)
+import qualified X.Y as Z hiding(Type, value...)
+
+-}
 
 
-
-
+{- Ch11 Functor -}
 
 
 
