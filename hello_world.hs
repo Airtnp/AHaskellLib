@@ -219,6 +219,8 @@ nextChar_full = toEnum . (+1) . fromEnum
 -- on :: (b -> b -> c) -> (a -> b) -> a -> a -> c
 -- (*) `on` f = \x y -> f x * f y
 
+
+
 {- Ch6 List Operation -}
 
 -- map
@@ -272,6 +274,9 @@ scanr_alt f b (x:xs) =
         f x (head ys) : ys
     where
         ys = scanr_alt f b xs
+
+
+
 
 {- Ch7 Typeclass -}
 data PosTC = CartesianTC Double Double | PolarTC Double Double
@@ -332,6 +337,68 @@ read_alt s = case [x | (x, t) <- reads s, ("", "") <- lex t] of
 
 -- read (show (x :: a)) :: a = x (May not True)
 
+{- Ch8 Number Typeclass -}
+
+-- Ord (default: lexicographical order)
+-- compare/max/min/(<)/(<=)/(>=)/(>)
+
+-- Never restrict data by typeclass
+
+-- Enum
+-- succ/pred/enumFrom/enumFromThen [x, y..]/enumFromTo [x..y]/enumFromThenTo [x, x'..y]
+-- [m, n..l] is enum
+data SPet = Dog | Cat | Bird | Turtle
+            deriving (Enum, Show)
+-- enumFromTo Dog Bird == [Dog, Cat, Bird]
+
+-- Bounded
+-- maxBound/minBound
+
+-- Num
+-- (+)/(-)/(*)/negate/abs/signum/fromInteger
+-- Real/Fractional/RealFrac/Floating/Integral
+
+
+{- Ch9 type/newtype/lazy-evaluation -}
+
+-- type : aliasing
+type IntList = [Int]
+type IdT a = a -> a
+
+id_alt :: a -> IdT a
+id_alt a = id
+
+-- newtype : like data
+-- only-one constructor and zero abstraction overhead
+-- no unboxing ctor 
+-- must be lifted type
+newtype Inch = Inch Double 
+               deriving Eq
+y = Inch 4
+
+-- bottom(_|_) : cannot-be-calculated
+undefined_alt = let x = x
+                    in x
+
+-- lifted type -> wrapper machine type (unlifted) so they can match _|_(⊥)
+-- lazy thunk -> Tagless Graph
+
+-- denotational semantics / referential transparency
+--      every time eta-conversion a binding to expression -> value maintained
+--      no side effect
+--      compiler-friendly: inline/simplify/fusion easily
+
+-- normal form/weak head normal form/thunk
+
+-- eager evaluation -> weak head normal form
+-- seq :: (a -> b -> b) seq = ... (Primitive)
+-- ($!) :: (a -> b) -> a -> b
+
+-- eager evaluation -> normal form
+-- deepseq
+-- force :: NFData a => a -> a
+
+{- Ch10 Module -}
 
 
 
