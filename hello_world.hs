@@ -4,6 +4,7 @@ module Main where
 
 import Data.List
 import Data.Function
+import Data.Monoid
 -- import Control.Applicative -- Compiler slow
 
 {-
@@ -49,6 +50,7 @@ basic comments
 
 {- Ch2: Data and pattern-matching -}
 -- data: declare T + declare T's constructor
+-- ctor/record in T is global
 data T = ConstructorT Int
     -- ConstructorT 1 :: T
 ti :: T
@@ -290,6 +292,7 @@ data PosTCD = CartesianTCD Double Double | PolarTCD Double Double
 
 {-
 -- declare typeclass Eq (interface[java] / traits[rust] / require[c++] / CRTP[no need of /=])
+-- interface in typeclass is global (can be determined by following type deduction)
 class Eq a where
     (==), (/=) :: a -> a -> Bool
     x /= y = not (x == y)
@@ -575,7 +578,7 @@ x & f = f x
     -- interchange: u <*> pure y === pure ($ y) <*> u
         -- ($ a) :: (a -> b) -> b
 
--- instance Applicative [] where  
+-- instance Applicative [a] where  
     -- pure x = [x]
     -- fs <*> xs = [f x | f <- fs, x <- xs ]
 
@@ -618,13 +621,114 @@ x & f = f x
 -- pure: 
     -- (global) lift function in any category defined by following parameters 
         -- pure :: Applicative f => a -> f a
-    -- (instance): wrap function in one category
+    -- (instance): wrap function in one category (add minimum context)
 -- natural lift:
     -- f <$> x <*> y <*> ...
     -- fmap with many in-category parameters
 
 {- Ch14 Monoid -}
 
+-- Monoid: (+)
+    -- associativity
+    -- identity
+
+-- class Monoid a where
+    -- mempty :: a
+    -- mappend :: a -> a -> a
+    -- mconcat :: [a] -> a
+    -- mconcat = foldr mappend mempty
+
+--  infixr 6
+-- (<>) :: Monoid a => a -> a -> a
+-- (<>) = mappend
+
+-- Common monoid: [a]/Ordering/()/(a, b)
+
+newtype Product_alt a = Product_alt {getProduct_alt :: a}
+    deriving Show
+newtype Sum_alt a = Sum_alt {getSum_alt :: a}
+    deriving Show
+
+instance Num a => Monoid (Product_alt a) where
+    mempty = Product_alt 1
+    (Product_alt x) `mappend` (Product_alt y) = Product_alt (x * y)
+
+instance Num a => Monoid (Sum_alt a) where
+    mempty = Sum_alt 1
+    (Sum_alt x) `mappend` (Sum_alt y) = Sum_alt (x + y)
+
+newtype Any_alt = Any_alt {getAny_alt :: Bool}
+    deriving Show
+newtype All_alt = All_alt {getAll_alt :: Bool}
+    deriving Show
+
+instance Monoid Any_alt where
+    mempty = Any_alt False
+    Any_alt x `mappend` Any_alt y = Any_alt (x || y)
+
+instance Monoid All_alt where
+    mempty = All_alt False
+    All_alt x `mappend` All_alt y = All_alt (x && y)
+
+-- instance Monoid b => Monoid (a -> b) where
+    -- mempty _ = mempty
+    -- mappend f g x = f x `mappend` g x
+
+-- Endomorphism
+newtype Endo_alt a = Endo_alt {appEndo_alt :: a -> a}
+instance Monoid (Endo_alt a) where
+    mempty = Endo_alt id
+    (Endo_alt f1) `mappend` (Endo_alt f2) = Endo_alt (f1 . f2)
+
+-- Some Monoid -> Category
+    -- ob(C) = Monoid M
+    -- hom(C) = mappend ...
+
+-- dual category
+    -- duality in Linear Algebra
+newtype Dual_alt a = Dual_alt {getDual_alt :: a}
+instance Monoid a => Monoid (Dual_alt a) where
+    mempty = Dual_alt mempty
+    (Dual_alt x) `mappend` (Dual_alt y) = Dual_alt (y `mappend` x)
+
+-- Const a to be Applicative
+-- Const cannot because (<*>) :: f (a -> b) -> f a -> f b cannot be satisfied
+-- Here we just restrict a to be Monoid to have extra id/op
+instance Monoid a => Applicative (Const_alt a) where
+    pure _ = Const_alt mempty
+    (Const_alt x) <*> (Const_alt y) = Const_alt (x `mappend` y)
+
+-- Applicative happens to be a Monoid: []/Maybe
+-- pure x === mempty of (<*>)
+
+-- Alternative (<|>)
+-- class Applicative f => Alternative f where
+    -- empty :: f a
+    -- (<|>) :: f a -> f a -> f a
+
+-- instance Alternative [] where
+    -- empty = []
+    -- (<|>) = (++)
+
+-- instance Alternative Maybe where
+    -- empty = Nothing
+    -- Nothing <|> r = r
+    -- l <|> _ = l
+
+-- zip vs lift
+-- simple lift -> n^k element
+-- ziplist -> n element
+newtype ZipList_alt a = ZipList_alt {getZipList_alt :: [a]}
+
+instance Functor ZipList_alt where
+    fmap f (ZipList_alt xs) = ZipList_alt $ fmap f xs
+
+instance Applicative ZipList_alt where
+    pure x = ZipList_alt (repeat x)
+    ZipList_alt fs <*> ZipList_alt xs = ZipList_alt (zipWith id fs xs)
+
+-- Applicative -> Functor
+-- fmap f x = pure f <*> x
 
 
 main :: IO()
