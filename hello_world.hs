@@ -444,7 +444,7 @@ add_one_maybe Nothing = Nothing
 -- category C
     -- set class ob(C) : object
     -- set class hom(C) : projection
-    -- binary operation -> : combination of projection
+    -- binary operation o : combination of projection
         -- forall a b c : hom(b, c) x hom(a, b) -> hom(a, c)
         -- f : hom(a, b) o g : hom(b, c) = g o f
             -- associativity h o (g o f) = h o g
@@ -556,6 +556,75 @@ infixl 1
 (&) :: a -> (a -> b) -> b
 x & f = f x
 -}
+
+
+{- Ch13 Applicative -}
+
+-- concat :: [[a]] -> [a]
+-- concat xss = foldl (++) [] xss
+
+-- class Functor f => Applicative f where
+    -- pure :: a -> f a
+    -- (<*>) :: Functor f => f (a -> b) -> f a -> f b
+    -- (<*)
+    -- (*>)
+
+    -- identity: pure id <*> v === v
+    -- composition: pure (.) <*> u <*> v <*> w === u <*> (v <*> w)
+    -- homomorphism: pure f <*> pure x === pure (f x)
+    -- interchange: u <*> pure y === pure ($ y) <*> u
+        -- ($ a) :: (a -> b) -> b
+
+-- instance Applicative [] where  
+    -- pure x = [x]
+    -- fs <*> xs = [f x | f <- fs, x <- xs ]
+
+-- instance Applicative ((->) a) where   -- (->): reader functor
+    -- pure :: x -> (a -> x)
+    -- pure x = \_ -> x -- just pure = const
+    -- (<*>) :: (a -> (x -> y)) -> (a -> x) -> (a -> y)
+    -- fxy <*> fx = \a -> fxy a $ fx a  -- fxy(a, fx(a))
+    
+-- pure (\x y z -> x + y + z) <*> (^2) <*> (^2) <*> (^3)
+-- \x -> (x^2) + (x^3) + (x^4)
+-- \x y z -> x + y + z :: (Num a) => a -> a -> a -> a
+-- pure f :: Num a => const (a -> a -> a -> a) === (->) a (a -> a -> a)
+-- g :: a -> a === (->) a (a)
+-- f <*> g :: (->) a (a -> a)
+
+-- natural lift
+-- infixl 4 <$>
+-- (<$>) :: (a -> b) -> f a -> f b
+-- f <$> x = fmap f x
+-- infixl -> function -> Functor
+-- (+) <$> Just 1 <*> Just 2 == pure (+) <*> Just 1 <*> Just 2
+
+-- helper
+
+-- infixl 4 <$, $>
+-- (<$) :: Functor f => a -> f b -> f a
+-- (<$) = fmap . const
+-- ($>) :: Functor f => f a -> b -> f b
+-- ($>) = flip (<$)
+
+-- infixl 4 <*, *>
+-- (*>) :: Applicative f => f a -> f b -> f b
+-- a1 *> a2 = (id <$ a1) <*> a2
+-- (<*) :: Applicative f => f a -> f b -> f a  -- compare to const
+-- (<*) = flip (*>)
+
+-- Conclusion
+-- <*> : horizonally concat function in category with its parameters in category
+-- pure: 
+    -- (global) lift function in any category defined by following parameters 
+        -- pure :: Applicative f => a -> f a
+    -- (instance): wrap function in one category
+-- natural lift:
+    -- f <$> x <*> y <*> ...
+    -- fmap with many in-category parameters
+
+{- Ch14 Monoid -}
+
 
 
 main :: IO()
