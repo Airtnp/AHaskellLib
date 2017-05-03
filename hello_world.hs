@@ -5,7 +5,8 @@ module Main where
 import Data.List
 import Data.Function
 import Data.Monoid
--- import Control.Applicative -- Compiler slow
+import Options.Applicative
+import Control.Applicative -- Compiler slow
 
 {-
 basic comments
@@ -729,6 +730,139 @@ instance Applicative ZipList_alt where
 
 -- Applicative -> Functor
 -- fmap f x = pure f <*> x
+
+
+{- Ch15 applicative parse/optparser -}
+data Either_alt a b = Left_alt a | Right_alt b
+    deriving (Show, Eq)
+
+-- Either a as container
+-- Left: bottom
+instance Functor (Either_alt a) where
+    fmap _ (Left_alt x) = Left_alt x
+    fmap f (Right_alt y) = Right_alt $ f y
+
+instance Applicative (Either_alt e) where
+    pure = Right_alt
+    Left_alt e <*> _ = Left_alt e
+    Right_alt f <*> r = fmap f r
+
+
+data Command  = CmdBranch | CmdFile
+    deriving (Show, Eq)
+
+cmdParser :: String -> Either_alt String Command
+cmdParser str = case str of
+    "branch" -> Right_alt CmdBranch
+    "file" -> Right_alt CmdFile
+    str' -> Left_alt ("Unknown command: " ++ str)
+
+data SubCommand = CmdList | CmdCreate | CmdRemove
+    deriving (Show, Eq)
+
+subCmdParser :: String -> Either_alt String SubCommand
+subCmdParser str = case str of
+    "list" -> Right_alt CmdList
+    "create" -> Right_alt CmdCreate
+    "remove" -> Right_alt CmdRemove
+    str' -> Left_alt ("Unknown sub-command: " ++ str)
+
+mainCmdParser :: String -> Either_alt String (Command, SubCommand)
+mainCmdParser str = 
+    let [cmdStr, subCmdStr] = words str
+    in (,) <$> cmdParser cmdStr <*> subCmdParser subCmdStr
+
+-- optparse-applicative
+data Greet = Greet {hello :: String, quiet :: Bool}
+greetParser :: Parser Greet
+greetParser = Greet
+    <$> strOption
+        ( long "Hello"
+        <> metavar "TARGET"
+        <> help "Target for the greeting" )
+        <*> switch
+            ( long "quiet"
+            <> help "Whether to be quiet" )
+
+greetMain :: IO()
+greetMain = do
+    greet <- execParser $ info greetParser mempty
+    case greet of
+        Greet h False -> putStrLn $ "Hello, " ++ h
+        _ -> return ()
+
+-- long :: HasName f => String -> Mod f a
+-- metavar :: HasMetavar f => String -> Mod f a
+-- help :: String -> Mod f a
+
+-- data Mod f a = Mod (f a -> f a) (DefaultProp a) (OptProperties -> OptProperties)
+
+-- instance Monoid (Mod f a) where
+    -- mempty = Mod id mempty id
+    -- Mod f1 d1 g1 `mappend` Mod f2 d2 g2
+        -- = Mod (f2 . f1) (d2 `mappend` d1) (g2 . g1)
+
+-- strOption :: Mod OptionFields String -> Parser String
+-- strOption(...) :: Parser String
+-- switch :: Mod FlagFields Bool -> Parser Bool
+-- switch(...) :: Parser Bool
+
+-- infixr 6 <>
+-- (<>) :: a -> a -> a
+    -- associative operation
+    -- if Monoid => (<>) = mappend
+
+-- since Parser is a alternative applicative
+-- we have 
+-- data AB = A | B
+-- ABParser :: Parser AB
+-- ABParser = AParser <!> BParser
+
+
+{- Ch16 Monad -}
+-- Maybe (Maybe Int) == Maybe Int
+-- join :: f (f a) -> f 
+-- join Maybe
+-- join [[a]] = concat
+
+-- class Applicative m => Monad m where -- book here mistakes the place of class P159
+    -- return :: a -> m a
+    -- return = pure
+    -- join :: m (m a) -> m a
+    -- fail :: String -> m a
+
+    -- left-id: return a >>= k === k a
+    -- right-id m >>= return === m
+    -- associativity: m >>= (x -> kx >>= h) === (m >>= k) >>= h
+
+
+-- bind
+-- infixl 1 >>=
+-- (>>=) :: m a -> (a -> m b) -> m b
+-- x >>= f = join $ fmap f x
+    -- f :: a -> m b => fmap f :: m a -> m (m b) => fmap f x :: m (m b) => x >>= f :: m b
+
+-- bind isomorphic join
+-- join :: Monad m => m (m a) -> m a
+-- join mmx = mmx >>= id
+
+
+-- realize <*>
+-- <*> :: Monad m => m (a -> b) -> m a -> m b
+-- mf <*> mx = join $ fmap (\f -> fmap f mx) mf
+
+-- ap :: Monad m => m (a -> b) -> m a -> m b
+-- mf `ap` mx = mf >>= (\f -> mx >>= \x -> fx)
+
+-- replicate <$> Just 3 <*> Just 'x'
+--  == Just 3 >>= \n ->
+        -- Just 'x' >>= \x ->
+            -- Just (replicate n x)
+
+-- compare to applicative
+-- applicative cannot change context/functor/pure
+-- monad can change properties of functor
+    -- m a -> (a -> m b) -> m b
 
 
 main :: IO()
