@@ -852,7 +852,7 @@ greetMain = do
 -- mf <*> mx = join $ fmap (\f -> fmap f mx) mf
 
 -- ap :: Monad m => m (a -> b) -> m a -> m b
--- mf `ap` mx = mf >>= (\f -> mx >>= \x -> fx)
+-- mf `ap` mx = mf >>= (\f -> mx >>= \x -> f x)
 
 -- replicate <$> Just 3 <*> Just 'x'
 --  == Just 3 >>= \n ->
@@ -864,6 +864,44 @@ greetMain = do
 -- monad can change properties of functor
     -- m a -> (a -> m b) -> m b
 
+-- do notation
+allArea :: [Int]
+allArea = do
+    x <- [1..10]
+    y <- [x..10]
+    return (x * y)
 
-main :: IO()
-main = print(nub [1, 2, 3, 2, 3])  -- Prelude.base.print
+allArea_raw :: [Int]
+allArea_raw = 
+    {-(-} [1..10] >>= \x ->
+        [x..10] {-(-} >>= \y ->
+            return (x * y)
+
+count_anonoymous_do :: Int
+count_anonoymous_do = sum $ do {- { -}
+    [1..10]
+    [1..10]
+    return 1 {- } -}
+
+-- abandon information
+-- (>>) :: Monad m => m a -> m b -> m b
+-- mx >> my = mx >>= (\x -> my >>= \y -> return y)
+
+-- IO
+-- getLine :: IO String
+-- purStrLn :: String -> IO ()
+
+-- when :: Applicative f => Bool -> f () -> f ()
+-- when p s = if p then s else pure ()
+
+-- unless :: Applicative f => Bool -> f () -> f ()
+-- unless p s = if p then pure () else s
+
+-- return ()
+-- void :: Function f => f a -> f ()
+-- void x = () <$ x
+
+-- main :: IO()
+main = do
+    x <- readLn
+    putStrLn x  -- Prelude.base.print
