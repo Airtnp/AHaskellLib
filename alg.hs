@@ -27,3 +27,15 @@ is_prime = ap (all . ((0 /=) . ) . mod) $ flip takeWhile primes_alt . (. (^2)) .
 primes_alt = 2 : filter is_prime [3, 5..]
 
 fib = 1 : 1 : zipWith (+) fib (tail fib)
+
+-- 8-queen problem
+queen_safe :: Int -> [Int] -> Int -> Bool
+queen_safe _ [] _ = True
+queen_safe x (x1:xs) n = 
+    x /= x1
+    && x /= x1 + n && x /= x1 - n
+    && queen_safe x xs (n+1)
+
+queen_num :: Int -> [[Int]]
+queen_num 0 = [[]]
+queen_num n = [ x : y | y <- queen_num (n-1), x <- [1..8], queen_safe x y 1]

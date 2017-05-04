@@ -901,6 +901,58 @@ count_anonoymous_do = sum $ do {- { -}
 -- void :: Function f => f a -> f ()
 -- void x = () <$ x
 
+
+{- Ch17 8-queen/List Monad -}
+-- instance Monad [] where
+    -- return x = [x]
+    -- x >>= f = concat $ fmap f x
+    -- join = concat
+
+-- do notation => list comprehension
+
+-- MonadPlus
+-- class (Alternative m, Monad m) => MonadPlus m where
+    -- mzero :: m a
+    -- mplus :: m a -> m a -> m a
+
+    -- identity: mzero `mplus` ma === ma `mplus` mzero === ma
+    -- associativity: ma `mplus` (mb `mplus` mc) === (ma `mplus` mb) `mplus` mc
+    -- mzero >>= f === mzero
+    -- v >> mzero === mzero
+
+-- change shape of monad | if-statement
+-- guard :: MonadPlus m => Bool -> m ()
+-- guard True = return ()
+-- guard False = mzero
+
+-- sequence
+-- Traversable : typeclass
+-- sequence :: (Traversable t, Monad m) => t (m a) -> m (t a)
+-- for list ([] = empty | (a:as) = concat | (:) = concat)
+-- sequence [] = return []
+-- sequence (a:as) = a >>= \x -> x : sequence as
+
+-- sequence_ = a >> sequence_ as
+
+-- mapM
+-- mapM :: (Traversable t, Monad m) => (a -> m b) -> t a -> m (t b)
+-- forM :: (Traversable t, Monad m) => t a -> (a -> m b) -> m (t b)
+-- forM = flip mapM
+
+-- list
+-- mapM = sequence .map
+-- mapM_ = sequence_ . map
+
+-- replicateM
+-- replicateM :: (Traversable t, Monad m) => Int -> m a -> m (t a)
+
+-- forever
+-- forever :: Monad m => m a -> m b
+
+-- filterM/foldM
+
+
+
 -- main :: IO()
 main = do
     x <- readLn
