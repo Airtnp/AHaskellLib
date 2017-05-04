@@ -773,9 +773,9 @@ mainCmdParser str =
     in (,) <$> cmdParser cmdStr <*> subCmdParser subCmdStr
 
 -- optparse-applicative
-data Greet = Greet {hello :: String, quiet :: Bool}
-greetParser :: Parser Greet
-greetParser = Greet
+data GreetT = GreetT {hello :: String, quiet :: Bool}
+greetParser :: Parser GreetT
+greetParser = GreetT
     <$> strOption
         ( long "Hello"
         <> metavar "TARGET"
@@ -788,7 +788,7 @@ greetMain :: IO()
 greetMain = do
     greet <- execParser $ info greetParser mempty
     case greet of
-        Greet h False -> putStrLn $ "Hello, " ++ h
+        GreetT h False -> putStrLn $ "Hello, " ++ h
         _ -> return ()
 
 -- long :: HasName f => String -> Mod f a
@@ -909,6 +909,8 @@ count_anonoymous_do = sum $ do {- { -}
     -- join = concat
 
 -- do notation => list comprehension
+-- <- === \... ->
+
 
 -- MonadPlus
 -- class (Alternative m, Monad m) => MonadPlus m where
@@ -950,6 +952,109 @@ count_anonoymous_do = sum $ do {- { -}
 -- forever :: Monad m => m a -> m b
 
 -- filterM/foldM
+
+
+{- Ch18 Reader Monad -}
+-- a -> b === (->) a b  Functor: (->) a Category: b
+-- fmap :: (a -> b) -> (b -> c) -> (a -> c)
+-- fmap = (.)
+
+-- a -> b === (->) a b Applicative: (->) a
+-- (<*>) :: (a -> b -> c) -> (a -> b) -> (a -> c)
+-- fbc <*> fb = \a -> fbc a $ fb a
+
+-- Reader:
+-- given all (->) a wrapped (a -> *) type some parameter
+-- combiner <$> f1 <*> f2 <*> ... $ global_const
+
+-- (->) a as Monad
+-- instance Monad (->) a where
+    -- return :: b -> a -> b
+    -- return = pure
+
+    -- (>>=) :: (a -> b) -> (b -> a -> c) -> (a -> c)
+    -- f >>= g = \x -> g (f x) x
+
+-- how to modify global const
+ask :: a -> a
+ask = id
+
+local :: (a -> a) -> (a -> r) -> a -> r
+local f g = g . f
+
+data Greet = Greet {
+    gHead :: String,
+    gBody :: String,
+    gFoot :: String
+} deriving Show
+
+gheadT :: String -> String
+gheadT n = "Head" ++ n
+
+gbodyT :: String -> String
+gbodyT n = "Body" ++ n
+
+gfootT :: String -> String
+gfootT n = "Foot" ++ n
+
+renderGreeting_applicative :: String -> Greet
+renderGreeting_applicative = Greet <$> gheadT <*> gbodyT <*> gfootT
+
+renderGreeting_monad :: String -> Greet
+renderGreeting_monad = 
+    gheadT >>= \h ->
+        gbodyT >>= \b ->
+            gfootT >>= \f ->
+                return $ Greet h b f
+
+renderGreeting_do :: String -> Greet
+renderGreeting_do = do
+    h <- gheadT
+    b <- gbodyT
+    f <- gfootT
+    return $ Greet h b f
+
+renderGreeting_do_mod :: String -> Greet
+renderGreeting_do_mod = do
+    h <- ask
+    (b, f) <- local ("Prefix" ++) $ do
+        b' <- gbodyT
+        f' <- gfootT
+        return (b', f')
+    return $ Greet h b f
+
+renderGreeting_monad_mod :: String -> Greet
+renderGreeting_monad_mod = 
+    ask >>= \h ->
+        local ("Prefix" ++) (     -- (\env ... ) . ("Prefix" ++)
+            gbodyT >>= \b' ->     -- \env -> ( \b' ->
+                gfootT >>= \f' -> --            ( \f' -> ( \_ ->
+                    return (b', f') --              (b', f') ) $ env ) . gfootT $ env ) . gbodyT $ env
+        ) >>= \(b, f) ->
+            return $ Greet h b f
+
+renderGreeting_applicative_mod :: String -> Greet
+renderGreeting_applicative_mod = Greet <$> id <*> gbodyT . ("Prefix" ++) <*> gfootT  . ("Prefix" ++)
+
+-- old-style Reader
+newtype Reader r a = Reader { runReader :: r -> a }
+
+instance Functor (Reader r) where
+    -- (->) r (a -> b) -> a -> (->) r b
+    fmap f m = Reader $ \r -> f (runReader m r)
+
+instance Applicative (Reader r) where
+    -- a -> (->) r a
+    pure a = Reader $ \_ -> a
+    -- (->) r (a -> b) -> (->) r a -> (->) r b
+    a <*> b = Reader $ \r -> runReader a r $ runReader b r
+
+instance Monad (Reader r) where
+    return = pure
+    -- (->) r a -> (a -> (->) r b) -> (->) r b
+    m >>= k = Reader $ \r -> runReader (k (runReader m r)) r
+
+
 
 
 
