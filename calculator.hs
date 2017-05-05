@@ -52,8 +52,8 @@ modify f = State $ \s -> ((), f s)
 (~~) :: (Double -> Double) -> State Double (Double -> Double)
 (~~) f = State $ \s -> (f, f s)
 
-op :: State Double (Double -> Double)
-op = do
+test_op :: State Double (Double -> Double)
+test_op = do
     (~+) 10
     (~*) 4
     (~-) 2
@@ -63,6 +63,6 @@ op = do
 
 main :: IO ()
 main = do
-    let (_, result) = runState op 0
+    let (_, result) = runState test_op 0
     print result
     

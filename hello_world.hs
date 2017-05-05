@@ -1095,13 +1095,60 @@ modify f = State $ \s -> ((), f s)
 
 -- random number
 
+{- Ch20 IO -}
 
+-- newtype IO a = IO (State# RealWorld -> (# State# RealWorld, a #))
+-- newtype IO a = IO (RealWorld -> (RealWorld, a))
 
+-- instance Functor IO where
+    -- fmap f x = x >>= (return . f)
 
+-- instance Applicative IO where
+    -- pure = return
+    -- (<*>) = ap
 
+-- instance Monad IO where
+    -- m >> k = m >>= \_ -> k
+    -- return  = returnIO
+    -- (>>=) = bindIO
 
+-- returnIO :: a -> IO a
+-- returnIO x = IO $ \s -> (# s, x #)
 
+-- bindIO : IO a -> (a -> IO b) -> IO b
+-- bindIO (IO m) k = IO $ \s -> case m s of (# new_s, a #) -> unIO (k a) new_s
 
+-- putChar/putStr/putStrLn/print
+-- getChar/getLine/getContents/interact
+-- readIO/readLn/readT
+-- readFile/writeFile/appendFile
+
+-- IO : non-blocking (managed by IO manager)
+
+-- IORef: compiler-magic
+
+-- forkIO :: IO () -> IO ThreadId
+
+-- ST Monad / Thread Monad
+-- create a pure world
+-- newtype ST s a = ST (STRep s a)
+-- type STRep s a = State# s -> (# State#, a #)
+
+-- newtype ST s a = ST (s -> (s, a))
+
+-- newSTRef :: a -> ST s (STRef s a)
+-- readSTRef :: STRef s a -> ST s a
+-- writeSTRef :: STRef s a -> a -> ST s ()
+-- modifySTRef :: STRef s a -> (a -> a) -> ST s ()
+-- modifySTRef' :: STRef s a -> (a -> a) -> ST s ()
+
+-- runST :: (forall s. ST s a) -> a
+            -- forall a. ((forall s. ST s a) -> a)
+
+-- stToIO :: ST RealWorld a -> IO a
+
+-- unsafe
+-- unsafePerformIO :: IO a -> a
 
 
 
