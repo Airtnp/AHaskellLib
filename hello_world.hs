@@ -561,6 +561,48 @@ infixl 1
 x & f = f x
 -}
 
+{-# LANGUAGE TemplateHaskell #-}
+-- makeLenses
+
+-- mkVars :: String -> Q (Pat Q, Exp Q)
+-- mkVars name = do
+    --  x <- newName name
+    -- return (varP x, varE x)
+
+-- makeLenses :: Name -> DecsQ
+-- makeLenses typename  = do
+    -- TyConI (DataD _ _ [] cons _) <- reify typeName
+    -- [RecC conName fields] <- return cons
+    -- fmap concat $
+        -- forM fields $ \(fieldName, _, fileType) ->
+            -- case nameBase fieldName of
+                -- -- only for _f
+                -- ('_':rest) -> makeLens typeName conName (mkName rest) fieldName fieldType
+                -- _ -> return []
+        
+-- makeLens
+    -- :: Name -- data type
+    -- -> Name -- ctor
+    -- -> Name -- lens name
+    -- -> Name -- data name
+    -- -> Type -- data type
+    -- -> DescQ
+-- makeLens typeName conName lensName fieldName fieldType = do
+    -- let bT = conT typename
+    --     aT = return fieldType
+    --     lensT = [t|(Functor f) => ($aT -> f $aT) -> $bT -> f $bT|]
+    -- sig <- sigD lensName lensT
+    -- (fP, fE) <- makeVars "f"
+    -- (bP, bE) <- makeVars "b"
+    -- (xP, xE) <- makeVars "x"
+    -- xE' <- xE
+
+    -- let -- \x -> (\y b -> b {field = y}) x p
+        -- lam = [| \$xP -> $(recUpdE bE [return (fieldName, xE')]) |]
+        -- pats = [fP, bP]
+        -- rhs = [|fmap $lam ($fE ($(varE fieldName) $bE))|]
+    -- body = funD lensName [clause pats (normalB rhs) []]
+    -- return [sig, body]
 
 {- Ch13 Applicative -}
 
@@ -1333,14 +1375,14 @@ instance (Monad m) => Monad (ReaderT r m) where
 
 -- connect different Kleisli Category
 liftReaderT :: m a -> ReaderT r m a
-liftReader m = ReaderT $ \r -> m
+liftReaderT m = ReaderT $ \r -> m
 -- or LiftReader m = ReaderT (const m)
 
-ask :: Monad m => ReaderT r m r
-ask = ReaderT return
+askT :: Monad m => ReaderT r m r
+askT = ReaderT return
 
-local :: (r -> r) -> ReaderT r m a -> Reader r m a
-local f m = ReaderT $ \r -> runReaderT m (f r)
+localT :: (r -> r) -> ReaderT r m a -> ReaderT r m a
+localT f m = ReaderT $ \r -> runReaderT m (f r)
 
 -- in Hask Category, id is identity hom
 -- in Kleisli Category, return is identity hom
@@ -1349,6 +1391,142 @@ local f m = ReaderT $ \r -> runReaderT m (f r)
 -- newtype StateT s m a = StateT { runStateT :: s -> m (a, s) }
 
 -- evalStateT/execStateT
+
+{- Ch25 Lift Monad Transform -}
+
+-- MonadIO
+-- MonadState/MonadReader
+
+-- type family
+-- TypeFamilies
+
+
+
+-- Lazy StateT/Strict StateT
+
+-- Writer Monad
+-- newtype Writter w a = Writer { runWriter :: (a, w) }
+-- instance (Monoid w) => Monad (Writer w) where
+    -- return x = Writer (x, mempty)
+    -- (Writer (x, w)) >>= f = 
+        -- let (Writer (y, w')) = fx
+        -- in Writer (y, w 'mappend' w')
+
+-- WriterT
+
+
+{- Ch29 Template Haskell -}
+
+-- program to generate AST
+
+-- mkName :: String -> Name
+
+-- ' :: 'fmap --> fmap :: Name (binding)
+-- '' :: ''Position  --> Position :: Name (data/typeclass)
+
+-- Type/Pat/Dec
+-- Clause [Pat] Body [Dec]
+-- Body = GuardedB [(Guard, Exp)] | NormalB Exp
+
+-- Name :: [a] -> Int
+-- Name = mkName "Name"
+-- typeSig = SigD Name
+--     (Forall T [PlainT (mkName "a")] [] (ArrowT 'AppT' (AppT ListT (VarT $ mkName "a")) 'AppT' (Cont ''Int)))
+-- eq1 = Clause
+
+-- Oxford bracket
+-- [|...|] : AST
+-- [|...|]/[e|...|] Q Exp
+-- [t|...|] Q Type
+-- [p|...|] Q Pat
+-- [d|...|] Q Dec
+
+-- Q Monad
+-- Compile-time
+-- Quasi/Quote
+-- newName/reify/location/reportError/runIO
+
+-- $.../$(...) concat
+-- varP/LitE/integerL
+
+{-# LANGUAGE TemplateHaskell #-}
+-- makeLenses
+
+-- mkVars :: String -> Q (Pat Q, Exp Q)
+-- mkVars name = do
+    --  x <- newName name
+    -- return (varP x, varE x)
+
+-- makeLenses :: Name -> DecsQ
+-- makeLenses typename  = do
+    -- TyConI (DataD _ _ [] cons _) <- reify typeName
+    -- [RecC conName fields] <- return cons
+    -- fmap concat $
+        -- forM fields $ \(fieldName, _, fileType) ->
+            -- case nameBase fieldName of
+                -- -- only for _f
+                -- ('_':rest) -> makeLens typeName conName (mkName rest) fieldName fieldType
+                -- _ -> return []
+        
+-- makeLens
+    -- :: Name -- data type
+    -- -> Name -- ctor
+    -- -> Name -- lens name
+    -- -> Name -- data name
+    -- -> Type -- data type
+    -- -> DescQ
+-- makeLens typeName conName lensName fieldName fieldType = do
+    -- let bT = conT typename
+    --     aT = return fieldType
+    --     lensT = [t|(Functor f) => ($aT -> f $aT) -> $bT -> f $bT|]
+    -- sig <- sigD lensName lensT
+    -- (fP, fE) <- makeVars "f"
+    -- (bP, bE) <- makeVars "b"
+    -- (xP, xE) <- makeVars "x"
+    -- xE' <- xE
+
+    -- let -- \x -> (\y b -> b {field = y}) x p
+        -- lam = [| \$xP -> $(recUpdE bE [return (fieldName, xE')]) |]
+        -- pats = [fP, bP]
+        -- rhs = [|fmap $lam ($fE ($(varE fieldName) $bE))|]
+    -- body = funD lensName [clause pats (normalB rhs) []]
+    -- return [sig, body]
+
+
+
+{- Ch31 GADT -}
+-- Typeable : compile-time type determination
+-- deriving (Typeable) --> typeOf (T)
+-- tyConPackage/tyConModule/tyConName/typeRepTyCon/typeRepFingerprint
+
+-- Dynamic : runtime type conversion
+-- toDyn/fromDynamic/fromDyn/dynTypeRep
+
+-- existential type
+-- Extension : ExistentialQuantification
+-- data Dyn = forall a. Show a => Dyn a (existential type)
+-- heteroList = [Dyn 3, Dyn "abc", Dyn 'x']
+
+-- TypeFamily/DataFamily/GADT
+-- type family Item a :: * (* -> *)
+-- Open: type instance Item String = Char (Char :: Item String)
+-- Close: type family Item a where ...
+
+-- data family T a
+-- data instance T Int = T1 Int | T2 Bool (T2 Bool :: T Int)
+
+-- data T ... where
+        -- C1 ... :: T ...
+        -- C2 ... :: T ...
+
+-- DataKinds
+-- Extension : GADTs/DataKinds/KindSignatures
+
+-- Extension : OverlappingInstances {-# OVERLAPPING #-}
+
+
+
+
 
 
 -- main :: IO()
