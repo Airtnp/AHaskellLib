@@ -1290,17 +1290,65 @@ instance Traversable BinaryTree_alt where
 -- empty/singleton/insert/adjust/insertWith/delete/lookup/lookupDefault/null/size/member
 
 
+{- Ch24 Monad Transform -}
+
+-- Kleisli Category
+    -- hom :: a -> [b]
+    -- (>=>) :: (a -> [b]) -> (b -> [c]) -> a -> [c]
+    -- f >=> g = \x -> concatMap g (f x)
+
+-- every Monad has corresponding Kleisli Category
+-- return :: a -> m a
+-- return = pure
+-- (>=>) :: Monad m => (a -> m b) -> (b -> m c) -> (a -> m c)
+-- f >=> g = \x -> f x >>= g
+-- (<=<) :: Monad m => (b -> m c) -> (a -> m b) -> (a -> m c)
+-- (<=<) = flip (>>=)
+
+-- ReaderT
+
+-- encap r -> ma Monad function instead of r -> a in Reader
+newtype ReaderT r m a = ReaderT { runReaderT :: r -> m a }
+
+instance (Functor m) => Functor (ReaderT r m) where
+    -- fmap :: (a -> b) -> ReaderT r m a -> ReaderT r m b
+    fmap f m = ReaderT $ \r -> fmap f (runReaderT m r)
+
+instance (Applicative m) => Applicative (ReaderT r m) where
+    -- pure :: a -> ReaderT r m a
+    pure r = ReaderT $ \_ -> pure r
+
+    -- (<*>) :: ReaderT r m (a -> b) -> ReaderT r m a -> ReaderT r m b (error on P246)
+    f <*> v = ReaderT $ \r -> runReaderT f r <*> runReaderT v r
+
+instance (Monad m) => Monad (ReaderT r m) where
+    -- return :: a -> ReaderT r m a
+    return = pure
+
+    -- (>>=) :: ReaderT r m a -> (a -> ReaderT r m b) -> ReaderT r m b
+    m >>= k = ReaderT $ \r -> do
+        a <- runReaderT m r
+        runReaderT (k a) r
 
 
+-- connect different Kleisli Category
+liftReaderT :: m a -> ReaderT r m a
+liftReader m = ReaderT $ \r -> m
+-- or LiftReader m = ReaderT (const m)
 
+ask :: Monad m => ReaderT r m r
+ask = ReaderT return
 
+local :: (r -> r) -> ReaderT r m a -> Reader r m a
+local f m = ReaderT $ \r -> runReaderT m (f r)
 
+-- in Hask Category, id is identity hom
+-- in Kleisli Category, return is identity hom
 
+-- StateT
+-- newtype StateT s m a = StateT { runStateT :: s -> m (a, s) }
 
-
-
-
-
+-- evalStateT/execStateT
 
 
 -- main :: IO()
