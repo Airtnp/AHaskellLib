@@ -1244,6 +1244,57 @@ instance Traversable BinaryTree_alt where
 -- phantom :: any
 
 
+{- Ch23 List/Array/Hash -}
+
+-- List
+-- O(1) --> :
+-- O(1) --> tail
+-- O(m) --> splitAt
+-- share object (lazy)
+-- O(n) -- length
+-- O(m) -- ++
+-- O(m) -- !!
+-- O(m) -- update
+
+-- intersperse/intercalate/subsequences/permutations/transpose/concatMap/mapAccumL/mapAccumR
+-- iterate/cycle/takeWhile/dropWhile/dropWhileEnd/span/break/stripPrefix/group/inits/tails/lookup/partition
+
+-- Array
+-- Ix
+-- class (Ord a) => Ix a where
+    -- minimum defintion: rnage, (index | unsafeIndex), inRange
+
+    -- range :: (a, a) -> [a]
+    -- index :: (a, a) -> a -> Int (indexError Exception)
+    -- unsafeIndex :: (a, a) -> a -> Int
+    -- inRange :: (a, a) -> a -> Bool
+    -- rangeSize :: (a, a) -> Int
+    -- unsafeRangeSize :: (a, a) -> Int
+
+-- array :: Ix i => (i, i) -> [(i, e)] -> Array i e
+-- listArray :: Ix i => (i, i) -> [e] -> Array i e
+-- accumArray :: Ix i => (e -> a -> e) -> e -> (i, i) -> [(i, a)] -> Array i e
+
+-- IArray (immutable)
+-- (!) :: (IArray a e, Ix i) => a i e -> i -> e
+-- indices/elems/assocs/accum/amap/ixmap
+-- (//) :: (IArray a e, Ix i) => a i e -> [(i, e)] -> a i e 
+
+-- MArray (mutable, must in RealWorld/ST/IO)
+
+-- freeze/thaw :: IArray <-> MArray
+
+
+-- HashMap
+-- hash-trie
+-- empty/singleton/insert/adjust/insertWith/delete/lookup/lookupDefault/null/size/member
+
+
+
+
+
+
+
 
 
 
