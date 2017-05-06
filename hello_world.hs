@@ -1151,10 +1151,21 @@ modify f = State $ \s -> ((), f s)
 -- unsafePerformIO :: IO a -> a
 
 
+{- Ch21 Language Extension/Pragma -}
 
+-- TupleSections --> (1,,3,) --> \x y -> (1, x, 3, y)
+-- LambdCase --> \x -> case x of --> \case
+-- MultiWayIf --> if else if else if --> if | | | (guard-with-no-binding)
+-- BinaryLiterals --> 0x/0X --> 0b/0B
+-- BangPattern --> fun(!x, !y) --> weak normal formal
+-- Record puns/NameFieldPuns --> getX { X {x = x}} --> get { X {x} }
+-- RecordWildCards --> getX { X {..} } -- default name
 
+-- lazy mode --> f ~(a, b) = 1
 
-
+-- \{-# UNPACK #-\} 
+-- \{-# INLINE func_name #-\} 
+-- \{-# INLINABLE/NONINLINE func_name #-\} 
 
 
 
