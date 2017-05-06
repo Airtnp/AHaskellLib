@@ -1160,12 +1160,93 @@ modify f = State $ \s -> ((), f s)
 -- BangPattern --> fun(!x, !y) --> weak normal formal
 -- Record puns/NameFieldPuns --> getX { X {x = x}} --> get { X {x} }
 -- RecordWildCards --> getX { X {..} } -- default name
+-- RankNTypes
+-- DeriveFunctor/DeriveFoldable/DeriveTraversable
 
 -- lazy mode --> f ~(a, b) = 1
 
 -- \{-# UNPACK #-\} 
 -- \{-# INLINE func_name #-\} 
 -- \{-# INLINABLE/NONINLINE func_name #-\} 
+
+
+{- Ch22 Foldable/Traversable -}
+
+-- data structure -> value
+-- class Foldable t where
+    -- fold :: Monoid m => t m -> m
+    -- foldMap :: Monoid m => (a -> m) -> t a -> m
+    -- foldr/foldr'/foldl/foldl'
+    -- foldr1/foldl1
+    -- toList
+    -- null/length/elem/maximum/minimum/sum/product
+
+data BinaryTree_alt a = Nil | Node a (BinaryTree_alt a) (BinaryTree_alt a)
+    deriving Show
+
+exampleTree_alt = 
+    Node 2
+        ( Node 3
+            ( Node 4 Nil Nil )
+            ( Node 5 Nil 
+                ( Node 9 Nil Nil )
+            )
+        )
+
+instance Functor BinaryTree_alt where
+    fmap f Nil = Nil
+    fmap f (Node x left right) = Node (f x) (fmap f left) (fmap f right)
+
+instance Foldable BinaryTree_alt where
+    -- foldr :: (a -> b -> b) -> b -> BinaryTree a -> b
+    foldr f acc Nil = acc
+    foldr f acc (Node x left right) = (foldr f (f x (foldr f acc right)) left)
+    -- foldMap f  = foldr (mappend . f) mempty
+    -- Key of Foldable
+    foldMap f Nil = mempty
+    foldMap f (Node x left right) = foldMap f left `mappend` f x `mappend` foldMap f right
+    -- foldr  f z t = appEndo (foldMap (Endo #. f) t) z
+    -- foldl f z t = appEndo (getDual (foldMap (Dual . Endo . flip f) t)) z
+
+
+-- Traversable
+-- methods to traverse
+-- class (Functor t, Foldable t) => Traversable t where
+    -- traverse :: Applicative f => (a -> f b) -> t a -> f (t b)
+    -- traverse = sequenceA . fmap -- default
+    -- sequenceA :: Applicative f => t (f a) -> f (t a)
+    -- sequenceA = traverse id -- default
+    -- mapM :: Monad m => (a -> m b) -> t a -> m (t b)
+    -- mapM = traverse -- default
+    -- sequence :: Monad m => t (m a) -> m (t a)
+    -- sequence = sequenceA -- default
+
+instance Traversable BinaryTree_alt where
+    traverse f Nil = pure Nil
+    traverse f (Node x left right) =
+        Node <$> f x <*> traverse f left <*> traverse f right
+
+
+-- Coerce
+-- (#.) :: Coercible b c => (b -> c) -> (a -> b) -> (a -> c)
+-- (#.) f = coerce
+
+-- nomial / representational / phantom types
+
+-- Coercible
+-- A -> A
+-- A -> newtype A
+-- A -> newtype A B(phantom)
+-- A T -> A NT
+
+-- nomial :: equal
+-- repreesntational :: must be Coercible =>
+-- phantom :: any
+
+
+
+
+
 
 
 
