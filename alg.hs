@@ -22,8 +22,21 @@ qsort (x:xs) = qsort (filter (<x) xs) ++ [x] ++ qsort (filter (>=x) xs)
 primes = sieve [2..]
 sieve (p:xs) = p : sieve [x | x <- xs, mod x p /= 0]
 
+isPrime2 :: Integer -> Bool
+isPrime2 n
+  | n < 0 = isPrime (-n)
+  | n == 0 = False
+  | n == 1 = False
+  | n == 2 = True
+  | otherwise = and $ map (jb . (mod n)) [2..truncate(sqrt(fromInteger n))]
+  where jb 0 = False
+        jb _ = True
+
 -- square = join (*)
-is_prime = ap (all . ((0 /=) . ) . mod) $ flip takeWhile primes_alt . (. (^2)) . (>=)
+is_prime = n > 1 &&
+              foldr (\p r -> p*p > n || ((n `rem` p) /= 0 && r))
+                True primes_alt
+-- is_prime = ap (all . ((0 /=) . ) . mod) $ flip takeWhile primes_alt . (. (^2)) . (>=)
 primes_alt = 2 : filter is_prime [3, 5..]
 
 fib = 1 : 1 : zipWith (+) fib (tail fib)
