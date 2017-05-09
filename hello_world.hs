@@ -83,6 +83,8 @@ v_norm2_alter2 v1 v2 = let x1 :+ y1 = v1
                            x2 :+ y2 = v2
                        in sqrt (fromIntegral ((x1 - x2)^2 + (y1 - y2)^2))
 
+-- as-mode
+-- x@y (if matches x then binding y)
 v_norm2_pattern :: V -> V -> Double
 v_norm2_pattern v1@(x1 :+ y1) v2@(x2 :+ y2) = sqrt (fromIntegral ((x1 - x2)^2 + (y1 - y2)^2))
 
@@ -237,6 +239,7 @@ nextChar_full = toEnum . (+1) . fromEnum
 -- filter f (x : xs) = | f x = x : filter f xs
                     -- |     = filter f xs
 
+-- foldr --> primitive recursive
 -- foldl (not work on infinite lists)
 -- foldr (work on infinite lists)
 foldr_alt :: (b -> a -> a) -> a -> [b] -> a

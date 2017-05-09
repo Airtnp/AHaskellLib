@@ -29,6 +29,7 @@ truncateDouble f n = (fromInteger $ round $ f * (10^n)) / (10.0^^n)
 
 -- Int -> String --> show
 -- Int -> Char --> chr (n+48) | intToDigit
+-- Char -> Int --> digitToInt
 
 -- elemIndices  find indices of element
 
