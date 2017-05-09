@@ -35,3 +35,15 @@ truncateDouble f n = (fromInteger $ round $ f * (10^n)) / (10.0^^n)
 -- words <-> unwords === intercalate " " [words] === concat (intersperse [" "] [words])
 
 -- non-exhaust pattern : cannot match
+
+-- Test.Hspec
+-- Test.QuickCheck
+
+countL :: String -> Strint -> Int
+countL str s = length $ filter (\i -> elem i s) str
+
+-- with context
+
+-- concatMap : map and concat
+subSequence_alt :: [a] -> [[a]]
+subSequence_alt = filter (not . null) . concatMap (map snd . splits . fst) . splits
