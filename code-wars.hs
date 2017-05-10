@@ -4,6 +4,7 @@ import Data.Char
 import Data.List
 import Data.String
 import Text.Printf
+import Data.Bits
 
 -- (\\) --> remove ys in xs
 isIsogram :: String -> Bool

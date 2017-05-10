@@ -1,4 +1,4 @@
--- Real World Haskell Ch5
+{-# LANGUAGE FlexibleInstances #-}
 module SimpleJSON (
         JValue(..),
         renderJValue,
@@ -9,14 +9,15 @@ module SimpleJSON (
 import Numeric (showHex)
 import Data.Bits (shiftR, (.&.))
 import Data.Char (ord)
+import Control.Arrow (second)
 
 data JValue = 
     JString String
     | JNumber Double
     | JBool Bool
     | JNull
-    | JObject [(String, JValue)]
-    | JArray [JValue]
+    | JObject (JObj JValue)
+    | JArray (JAry JValue)
     deriving (Eq, Ord, Show)
 
 data Doc = 
@@ -27,6 +28,93 @@ data Doc =
     | Concat Doc Doc
     | Union Doc Doc
     deriving (Show)
+
+type JError = String
+
+-- avoid OverlappingInstances
+newtype JAry a = JAry {
+    fromJAry :: [a]
+    } deriving (Eq, Ord, Show)
+
+newtype JObj a = JObj {
+    fromJObj :: [(String, a)]
+    } deriving (Eq, Ord, Show)
+
+class JSON a where
+    toJValue :: a -> JValue
+    fromJValue :: JValue -> Either JError a
+
+instance JSON JValue where
+    toJValue = id
+    fromJValue = Right
+
+instance JSON Bool where
+    toJValue = JBool
+    fromJValue (JBool b) = Right b
+    fromJValue _ = Left "Not a JSON Boolean"
+
+-- in Haskell 98, need LANGUAGE TypeSynonymInstances
+-- instance cannot use [Char] instead of [] Char
+instance JSON String where
+    toJValue = JString
+    fromJValue (JString s) = Right s
+    fromJValue _ = Left "Not a JSON String"
+
+doubleToJValue :: (Double -> a) -> JValue -> Either JError a
+doubleToJValue f (JNumber v) = Right (f v)
+doubleToJValue _ _ = Left "Not a JSON Number"
+
+instance JSON Int where
+    toJValue = JNumber . realToFrac
+    fromJValue = doubleToJValue round
+
+instance JSON Integer where
+    toJValue = JNumber . realToFrac
+    fromJValue = doubleToJValue round
+
+instance JSON Double where
+    toJValue = JNumber
+    fromJValue = doubleToJValue id
+
+{- Overlappable
+instance (JSON a) => JSON [a] where
+    toJValue = undefined
+    fromJValue = undefined
+
+instance (JSON a) => JSON [(String, a)] where
+    toJValue = undefined
+    fromJValue = undefined
+-}
+
+jAryFromJValue :: (JSON a) => JValue -> Either JError (JAry a)
+jAryFromJValue (JArray (JAry a)) = whenRight JAry (mapEithers fromJValue a)
+jAryFromJValue _ = Left "Not a JSON Array"
+
+whenRight :: (b -> c) -> Either a b -> Either a c
+whenRight _ (Left err) = Left err
+whenRight f (Right a) = Right (f a)
+
+mapEithers :: (a -> Either b c) -> [a] -> Either b [c]
+mapEithers f (x:xs) = case mapEithers f xs of
+                        Left err -> Left err
+                        Right ys -> case f x of
+                                      Left err -> Left err
+                                      Right y -> Right (y:ys)
+mapEithers _ _ = Right []
+
+jAryToJValue :: (JSON a) => JAry a -> JValue
+jAryToJValue = JArray . JAry . map toJValue . fromJAry
+
+instance (JSON a) => JSON (JAry a) where
+    toJValue = jAryToJValue
+    fromJValue = jAryFromJValue
+
+instance (JSON a) => JSON (JObj a) where
+    toJValue = JObject . JObj . map (second toJValue) . fromJObj
+    
+    fromJValue (JObject (JObj o)) = whenRight JObj (mapEithers unwrap o) where 
+        unwrap (k,v) = whenRight ((,) k) (fromJValue v)
+    fromJValue _ = Left "not a JSON object"    
 
 empty :: Doc
 empty = Empty
@@ -182,8 +270,8 @@ renderJValue (JBool True) = text "true"
 renderJValue (JBool False) = text "false"
 renderJValue JNull = text "null"
 
-renderJValue (JArray a) = series '[' ']' renderJValue a
-renderJValue (JObject o) = series '{' '}' field o where
+renderJValue (JArray a) = series '[' ']' renderJValue (fromJAry a)
+renderJValue (JObject o) = series '{' '}' field (fromJObj o) where
     field (name, val) = string name <> text ": " <> renderJValue val
 
 
