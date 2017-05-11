@@ -893,11 +893,15 @@ greetMain = do
 
 
 -- realize <*>
+-- <*> is just S-combinator
 -- <*> :: Monad m => m (a -> b) -> m a -> m b
 -- mf <*> mx = join $ fmap (\f -> fmap f mx) mf
 
 -- ap :: Monad m => m (a -> b) -> m a -> m b
 -- mf `ap` mx = mf >>= (\f -> mx >>= \x -> f x)
+
+-- $ lift to Applicative = <*>
+-- $ lift to Monad = ap
 
 -- replicate <$> Just 3 <*> Just 'x'
 --  == Just 3 >>= \n ->
@@ -909,7 +913,11 @@ greetMain = do
 -- monad can change properties of functor
     -- m a -> (a -> m b) -> m b
 
--- do notation
+-- do-notation
+-- simple act === act >>
+-- y x <- t === >>= \x -> t === (\x -> t) y
+-- let xxx = yyy === let xxx = yyy in
+
 allArea :: [Int]
 allArea = do
     x <- [1..10]
