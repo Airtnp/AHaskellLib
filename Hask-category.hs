@@ -273,3 +273,90 @@ postFComp (Nat gh) fa = fmap gh fa
 instance Category Nat where
     id = Nat id
     Nat f . Nat g = Nat (f . g)
+
+class Monoid a where
+    mempty :: a
+    mappend :: a -> a -> a
+    mconcat :: [a] -> a
+    mconcat = foldr mappend mempty
+
+-- Applicative/Monad
+
+-- Since every Functor in Hask Category is Endofunctor (Hask -> Hask)
+-- ob(Hask) = Functor
+-- hom(Hask) = Natural Transform
+-- Id(Hask)
+-- o[⊗](Hask) tensor product
+
+-- When ⊗ is Day convolution, we have Monoid (F, e, m)
+-- id = e : id -> F
+-- m = F ⊗ F -> F
+-- F = Applicative
+
+data Day f g a = forall b, c. Day (f b) (g c) ((b, c) -> a)
+
+instance Functor (Day f g) where
+    fmap f (Day fb gc h) = Day (fb gc (f . h))
+
+{-
+    forall b, c. Day (f b) (g c) ((b, c) -> a)
+    -- in Hask, ((a, b), c) ≅ (a, (b, c)), (a, b) ≅ (b, a)
+    ＝ forall b, c. Day' (f b) ((b, c) -> a) (g c)
+    ＝ forall c. Day2 (forall b. Day1 (f b) ((b, c) -> a)) (g c)
+    -- curried (b, c) -> a ≅ b -> (c -> a) 
+    ＝ forall c. Day2 (forall b. Day1 (f b) (b -> (c -> a)) (g c)
+    -- coyoneda lemma, forall b. Coyoneda (b -> a) (f b) = f a 
+    ＝ forall c. Day2 (f (c -> a)) (g c)
+
+    day :: f (c -> a) -> g c -> Day f g a
+    day fca gc = Day fca gc (uncurry id)
+
+    dap :: Day f f a -> f a
+    dap (Day2 fca fc) = fca <*> fc
+-}
+
+-- Applicative和Monad都是自函子范畴上的一个幺半群
+
+-- Applicative是自函子的水平方向的组合
+-- Applicative是自函子的Monoidal范畴上的一个幺半群，
+-- 该Monoidal范畴的张量积（tensor product，⊗:M×M→M）是自函子的Day Convolution，
+-- 单位元是Id functor。
+class Functor f => Applicative f where
+    pure :: a -> f a  -- e: Id -> F
+    <*> :: f (a -> b) -> f a -> f b -- m: F `Day` F -> F
+
+-- Applicative是自函子的水平方向的组合
+-- Applicative是自函子的Monoidal范畴上的一个幺半群，
+-- 该Monoidal范畴的张量积（tensor product，⊗:M×M→M）是自函子的Composiiton，
+-- 单位元是Id functor。
+class Applicative m => Monad m where
+  return :: a -> m a  -- e: Nat Id f
+  (>>=) :: forall a b. m a -> (a -> m b) -> m b -- m: Nat (Compose f f) f
+  -- Kleisli way
+  (>=>)   :: forall a b c. (a -> m b) -> (b -> m c) -> (a -> m c)
+  -- Join way
+  join :: forall a. f (f a) -> f a
+
+  join m = m >>= id
+  join = id >=> id
+
+  m >>= f = join (fmap f m)
+  (>>=) = flip (id >=>)
+
+  f >=> g = \x -> f x >>= g
+  f >=> g = join . fmap g . f
+
+
+-- Fold - Catamorphism
+
+
+-- Yoneda Embedding
+-- ref : https://zhihu.com/question/23324349/answer/54242934
+-- ref : https://bartoszmilewski.com/2013/05/15/understanding-yoneda/
+
+-- Lens - van Laarhoven representation
+-- ref : https://bartoszmilewski.com/2015/07/13/from-lenses-to-yoneda-embedding/
+
+-- Profunctor
+
+-- Kleisli Category
