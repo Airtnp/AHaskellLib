@@ -4,6 +4,8 @@
 --     : http://hongjiang.info/understand-monad-5-what-is-endofunctor/
 --     : https://www.zhihu.com/question/48164238/answer/109748643
 --     : https://hackage.haskell.org/package/category-extras
+--     : https://en.wikibooks.org/wiki/Haskell/Category_theory
+--     : http://science.raphael.poss.name/categories-from-scratch.html
 
 module Hask where
 
