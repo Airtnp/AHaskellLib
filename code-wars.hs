@@ -49,3 +49,5 @@ countL str s = length $ filter (\i -> elem i s) str
 -- concatMap : map and concat
 subSequence_alt :: [a] -> [[a]]
 subSequence_alt = filter (not . null) . concatMap (map snd . splits . fst) . splits
+
+-- 18 questions in collection-list

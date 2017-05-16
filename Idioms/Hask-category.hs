@@ -15,6 +15,7 @@ class Category cat where
 
 type Hask = (->)
 
+-- http://hackage.haskell.org/package/base-4.9.1.0/docs/src/Control.Category.html#Category
 instance Category Hask where
     id x = x
     (.) f g x = f (g x)
@@ -339,6 +340,7 @@ class Applicative m => Monad m where
   -- Join way
   join :: forall a. f (f a) -> f a
 
+{-
   join m = m >>= id
   join = id >=> id
 
@@ -347,7 +349,62 @@ class Applicative m => Monad m where
 
   f >=> g = \x -> f x >>= g
   f >=> g = join . fmap g . f
+-}
 
+-- Arrow
+-- transformation(arrow) vs. operation(Monad)
+
+{-
+    arr id = id
+    arr (f >>> g) = arr f >>> arr g
+    first (arr f) = arr (first f)
+    first (f >>> g) = first f >>> first g
+    first f >>> arr fst = arr fst >>> f
+    first f >>> arr (id *** g) = arr (id *** g) >>> first f
+    first (first f) >>> arr assoc = arr assoc >>> first f
+-}
+
+-- http://hackage.haskell.org/package/base-4.9.1.0/docs/src/Control.Arrow.html#Arrow
+class Category a => Arrow a where
+    arr :: (b -> c) -> a b c
+    first :: a b c -> a (b, d) (c, d)
+    first = (*** id)
+    second :: a b c -> a (d, b) (d, c)
+    second = (id ***)
+    (***) :: a b c -> a b' c' -> a (b, b') (c, c')
+    f *** g = first f >>> arr swap >>> first g >>> arr swap
+      where swap ~(x,y) = (y,x)
+
+-- ordinary function: (->) b c
+
+newtype Reader r a = Reader { runReader :: r -> a }
+
+instance Arrow Reader where
+    arr f = f
+    (***) f g ~(x, y) = (f x, g y)
+
+instance Arrow (->) where
+    arr f = f
+    (***) f g ~(x, y) = (f x, g y)
+
+-- Kleisli arrows: Monad m => (->) b (m c)
+
+newtype Kleisli m a b = Kleisli { runKleisli :: a -> m b }
+
+-- newtype ReaderT r m a = ReaderT { runReaderT :: r -> m a }
+
+instance Monad m => Arrow (Kleisli m) where
+    arr f = Kleisli (return . f)
+    first (Kleisli f) = Kleisli $ \ ~(b,d) -> f b >>= \c -> return (c,d)
+    second (Kleisli f) = Kleisli $ \ ~(d,b) -> f b >>= \c -> return (d,c)
+    
+
+
+-- stream transformer: (->) (Stream b) (Stream c)
+
+-- simple automata
+-- Another model of dataflow languages uses the type
+        -- newtype Auto b c = Auto (b -> (c, Auto b c))
 
 -- Fold - Catamorphism
 
