@@ -18,3 +18,9 @@
 
 -- Monad Control
 -- ref: https://hackage.haskell.org/package/monad-control
+
+-- ListT done right
+-- ref: https://wiki.haskell.org/ListT_done_right
+
+-- Cont
+-- ref: https://wiki.haskell.org/Cont_computations_as_question-answering_boxes
