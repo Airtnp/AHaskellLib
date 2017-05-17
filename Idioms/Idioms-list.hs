@@ -4,6 +4,9 @@
 -- Syntax
 -- ref: https://wiki.haskell.org/Category:Syntax
 
+-- Style
+-- ref: https://wiki.haskell.org/Category:Style
+
 -- Point-free
 -- ref: https://wiki.haskell.org/Pointfree
 
@@ -24,3 +27,6 @@
 
 -- Cont
 -- ref: https://wiki.haskell.org/Cont_computations_as_question-answering_boxes
+
+-- Mutable Variable
+-- ref: https://wiki.haskell.org/Mutable_variable
