@@ -7,6 +7,9 @@
 -- Style
 -- ref: https://wiki.haskell.org/Category:Style
 
+-- Mathematics
+-- ref: https://wiki.haskell.org/Category:Mathematics
+
 -- Point-free
 -- ref: https://wiki.haskell.org/Pointfree
 
@@ -30,3 +33,6 @@
 
 -- Mutable Variable
 -- ref: https://wiki.haskell.org/Mutable_variable
+
+-- Fix
+-- ref: https://en.wikibooks.org/wiki/Haskell/Fix_and_recursion

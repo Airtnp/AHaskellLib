@@ -20,6 +20,18 @@ instance Category Hask where
     id x = x
     (.) f g x = f (g x)
 
+instance Category (->) where
+    id = GHC.Base.id
+    (.) = (GHC.Base..)
+
+-- | Right-to-left composition
+(<<<) :: Category cat => cat b c -> cat a b -> cat a c
+(<<<) = (.)
+
+-- | Left-to-right composition
+(>>>) :: Category cat => cat a b -> cat b c -> cat a c
+f >>> g = g . f
+
 -- id . f = f
 -- f . id = f
 -- f . (g . h) = (f . g) . h
@@ -328,9 +340,9 @@ class Functor f => Applicative f where
     pure :: a -> f a  -- e: Id -> F
     <*> :: f (a -> b) -> f a -> f b -- m: F `Day` F -> F
 
--- Applicative是自函子的水平方向的组合
--- Applicative是自函子的Monoidal范畴上的一个幺半群，
--- 该Monoidal范畴的张量积（tensor product，⊗:M×M→M）是自函子的Composiiton，
+-- Monad是自函子的垂直方向的组合
+-- Monad是自函子的Monoidal范畴上的一个幺半群，
+-- 该Monoidal范畴的张量积（tensor product，⊗:M×M→M）是自函子的Compose，
 -- 单位元是Id functor。
 class Applicative m => Monad m where
   return :: a -> m a  -- e: Nat Id f
