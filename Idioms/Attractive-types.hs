@@ -1,0 +1,2 @@
+-- Attractive Types
+-- ref: http://okmij.org/ftp/Haskell/types.html

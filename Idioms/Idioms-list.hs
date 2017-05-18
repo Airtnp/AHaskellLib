@@ -36,3 +36,9 @@
 
 -- Fix
 -- ref: https://en.wikibooks.org/wiki/Haskell/Fix_and_recursion
+
+-- Attractive Types
+-- ref: http://okmij.org/ftp/Haskell/types.html
+
+-- Glossary
+-- ref: https://wiki.haskell.org/Category:Glossary

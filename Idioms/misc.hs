@@ -23,3 +23,11 @@ sum (x:xs) = x + sum xs
             => sum [] + 0 == 0
             => sum [] == 0
 -}
+
+-- Blueprint
+-- ref: https://wiki.haskell.org/Blueprint
+-- cafe: https://mail.haskell.org/pipermail/haskell-cafe/2006-September/018133.html
+
+-- The goal of the blueprint technique is to allow reading a data structure like Data.Map while constructing it.
+-- The idea is to separate the structure from the contained data.
+
