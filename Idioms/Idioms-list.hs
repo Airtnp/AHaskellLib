@@ -10,6 +10,12 @@
 -- Mathematics
 -- ref: https://wiki.haskell.org/Category:Mathematics
 
+-- Article
+-- ref: https://wiki.haskell.org/Category:Article
+
+-- Extension
+-- ref: https://wiki.haskell.org/Category:Language_extensions
+
 -- Point-free
 -- ref: https://wiki.haskell.org/Pointfree
 

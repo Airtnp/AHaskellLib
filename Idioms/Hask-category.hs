@@ -419,7 +419,7 @@ instance Monad m => Arrow (Kleisli m) where
         -- newtype Auto b c = Auto (b -> (c, Auto b c))
 
 -- Fold - Catamorphism
-
+-- ref: https://www.zhihu.com/question/37817937
 
 -- Yoneda Embedding
 -- ref : https://zhihu.com/question/23324349/answer/54242934

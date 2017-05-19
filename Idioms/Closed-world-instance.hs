@@ -1,0 +1,2 @@
+-- Closed world instance
+-- ref: https://wiki.haskell.org/Closed_world_instances
