@@ -31,3 +31,33 @@ sum (x:xs) = x + sum xs
 -- The goal of the blueprint technique is to allow reading a data structure like Data.Map while constructing it.
 -- The idea is to separate the structure from the contained data.
 
+
+-- Combinator pattern
+-- Libraries such as Parsec use the combinator pattern, where complex structures are built by defining a small set of very simple 'primitives', and a set of 'combinators' for combining them into more complicated structures. It's somewhat similar to the Composition pattern found in object-oriented programming.
+
+{-
+    In the case of the Parsec, the library provides a set of extremely simple (almost trivial) parsers, and ways to combine small parsers into bigger parsers. Many other libraries and programs use the same ideas to build other structures:
+
+        Parsec builds parsers out of smaller parsers.
+
+        The School of Expression (SOE) graphics library builds pictures out of individual shapes.
+        
+        The SOE book also mentions a library to build music out of individual notes and rests.
+
+        Another textbook describes building financial contracts.
+
+        [Software transactional memory] builds big transactions out of smaller ones.
+
+        The Haskell IO system itself builds whole programs out of small I/O actions using >>= and return.
+-}
+
+
+
+-- Composing functions with multiple values
+-- (++) :: [a] -> [a] -> [a]
+-- How to return [a] -> [a] from ([a], [a])?
+
+-- just uncurry it
+-- uncurry (++) :: ([a], [a]) -> [a]
+
+

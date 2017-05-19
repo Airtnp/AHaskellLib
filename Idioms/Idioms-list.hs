@@ -7,6 +7,9 @@
 -- Style
 -- ref: https://wiki.haskell.org/Category:Style
 
+-- Combinators
+-- ref: https://wiki.haskell.org/Category:Combinators
+
 -- Mathematics
 -- ref: https://wiki.haskell.org/Category:Mathematics
 
@@ -48,3 +51,6 @@
 
 -- Glossary
 -- ref: https://wiki.haskell.org/Category:Glossary
+
+-- All about Monads
+-- ref: https://wiki.haskell.org/All_About_Monads
