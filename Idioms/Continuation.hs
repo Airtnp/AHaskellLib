@@ -2,6 +2,7 @@
 -- ref: https://wiki.haskell.org/Continuation
 -- okmij: http://okmij.org/ftp/continuations/index.html
 -- ref: http://www.haskellforall.com/2012/12/the-continuation-monad.html
+-- wiki: https://en.wikipedia.org/wiki/Delimited_continuation
 
 -- 1. General or introductory materials
 

@@ -61,3 +61,15 @@ sum (x:xs) = x + sum xs
 -- uncurry (++) :: ([a], [a]) -> [a]
 
 
+-- Default values in records
+{-
+    You cannot associate default values with a type, but you can define as many record values as you like and use them as basis for updating elements.
+
+    data Foo = Foo { bar :: Int, baz :: Int, quux :: Int }
+    
+    fooDefault = Foo { bar = 1, baz = 2, quux = 3 }
+    
+    newRecord = fooDefault { quux = 42 }
+
+    If you only want some of the fields to be defaulted, you can make them undefined in the default record. Unfortunately this won't be statically checked by the compiler.
+-}
