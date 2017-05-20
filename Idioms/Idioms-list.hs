@@ -10,8 +10,14 @@
 -- Combinators
 -- ref: https://wiki.haskell.org/Category:Combinators
 
+-- Theoretical-Foundations
+-- ref: https://wiki.haskell.org/Category:Theoretical_foundations
+
 -- Mathematics
 -- ref: https://wiki.haskell.org/Category:Mathematics
+
+-- Type-level programming
+-- ref: https://wiki.haskell.org/Category:Type-level_programming
 
 -- Article
 -- ref: https://wiki.haskell.org/Category:Article
@@ -54,3 +60,6 @@
 
 -- All about Monads
 -- ref: https://wiki.haskell.org/All_About_Monads
+
+-- ApplicativeDo
+-- ref: https://www.reddit.com/r/haskell/comments/6c7hen/applicativedo_overhaul_request_for_comments/
