@@ -22,6 +22,9 @@
 -- Article
 -- ref: https://wiki.haskell.org/Category:Article
 
+-- Hawiki
+-- ref: https://wiki.haskell.org/HaWiki_migration
+
 -- Extension
 -- ref: https://wiki.haskell.org/Category:Language_extensions
 
@@ -63,3 +66,14 @@
 
 -- ApplicativeDo
 -- ref: https://www.reddit.com/r/haskell/comments/6c7hen/applicativedo_overhaul_request_for_comments/
+
+-- Histomorphism/Dynamorphism
+-- ref: https://www.zhihu.com/question/48711355
+-- Memotrie: https://github.com/conal/MemoTrie
+
+-- Coercible
+-- ref: https://wiki.haskell.org/GHC/Coercible
+-- Note [Function coercion]: http://hackage.haskell.org/package/base-4.9.0.0/docs/src/Data.Foldable.html
+
+-- Bottom
+-- ref: https://wiki.haskell.org/Bottom

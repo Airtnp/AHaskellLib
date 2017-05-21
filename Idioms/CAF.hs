@@ -1,0 +1,2 @@
+-- Constant applicative form(CAF)
+-- ref: https://wiki.haskell.org/CAF
