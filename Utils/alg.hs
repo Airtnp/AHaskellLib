@@ -52,3 +52,6 @@ queen_safe x (x1:xs) n =
 queen_num :: Int -> [[Int]]
 queen_num 0 = [[]]
 queen_num n = [ x : y | y <- queen_num (n-1), x <- [1..8], queen_safe x y 1]
+
+-- TODO: Knuth-Morris-Partt substring
+-- ref: https://www.twanvl.nl/blog/haskell/Knuth-Morris-Pratt-in-Haskell

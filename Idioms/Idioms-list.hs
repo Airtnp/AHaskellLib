@@ -25,6 +25,9 @@
 -- Hawiki
 -- ref: https://wiki.haskell.org/HaWiki_migration
 
+-- Commentary
+-- ref: https://ghc.haskell.org/trac/ghc/wiki/Commentary
+
 -- Extension
 -- ref: https://wiki.haskell.org/Category:Language_extensions
 

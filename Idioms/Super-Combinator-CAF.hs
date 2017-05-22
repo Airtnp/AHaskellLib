@@ -2,6 +2,7 @@
 -- ref: https://wiki.haskell.org/Super_combinator
 -- Constant applicative form(CAF)
 -- ref: https://wiki.haskell.org/CAF
+-- stackoverflow: http://stackoverflow.com/questions/8330756/what-are-super-combinators-and-constant-applicative-forms
 
 -- Super combinator
 
@@ -41,3 +42,7 @@ ints = from 1 where
 -- It depends on how they desugar. `(4 +)` presumably desugars to `((+) 4)` and so is a CAF. If (+ 4) desugars to `\x -> x + 4` it isn't, if it desugars to `flip (+) 4` it is. -- DerekElkins
 
 -- You've inverted it slightly (or it reads that way): it's reducibility that makes CAFs special. Since they are reducible they may imply work; work that could be saved. Nevertheless, yes, one typically doesn't care whether something's a CAF or not as far as meaning goes. Read the relevant parts of the book I linked to below, if you haven't already. As for ReferentialTransparency, whether or not something is viewed as a CAF doesn't change it's meaning, i.e. it is just a different implementation of the same function.
+
+-- stackoverflow
+
+-- Constant Applicative Forms, or CAFs for short, are top-level values defined in a program. Essentially, they are objects that are not allocated dynamically at run-time but, instead, are part of the static data of the program.

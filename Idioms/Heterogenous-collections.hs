@@ -1,0 +1,3 @@
+-- Heterogenous collections
+-- ref: https://wiki.haskell.org/Heterogenous_collections
+-- Oleg: http://okmij.org/ftp/Haskell/HList-ext.pdf
