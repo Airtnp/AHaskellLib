@@ -73,3 +73,8 @@ sum (x:xs) = x + sum xs
 
     If you only want some of the fields to be defaulted, you can make them undefined in the default record. Unfortunately this won't be statically checked by the compiler.
 -}
+
+-- High Order Function
+
+-- A higher-order function is a function that takes other functions as arguments or returns a function as result.
+-- The major use is to abstract common behaviour into one place.
