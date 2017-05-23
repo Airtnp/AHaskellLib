@@ -78,3 +78,35 @@ sum (x:xs) = x + sum xs
 
 -- A higher-order function is a function that takes other functions as arguments or returns a function as result.
 -- The major use is to abstract common behaviour into one place.
+
+
+-- Indent
+-- ref: https://wiki.haskell.org/Indent
+
+-- Emacs/GHC/ghc-api/Language.Haskell/Lambdabot
+-- --ddump-parsed
+-- ghc -O a.hs -package haskell-src
+
+
+-- Inferring types
+-- ref: https://wiki.haskell.org/Inferring_types
+
+-- Have the compiler infer types for you automatically
+-- GHCi/Editor support/Compiler support
+
+
+{-
+
+   #!/bin/sh
+   # input is a top level .hs decls
+   FILE=$*
+   DECL=`cat`
+   ID=`echo $DECL | sed 's/^\([^ ]*\).*/\1/'`
+   echo ":t $ID" | ghci -v0 -cpp -fglasgow-exts -w $FILE
+   echo $DECL
+
+    :map ty :.!typeOf %
+
+-}
+
+-- $ ghc -ddump-tc A.hs 2>&1 | sed '/^\=/d;/AbsBinds/d;/ *\[\]$/d'
