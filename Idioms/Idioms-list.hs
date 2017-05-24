@@ -80,3 +80,6 @@
 
 -- Bottom
 -- ref: https://wiki.haskell.org/Bottom
+
+-- liboleg
+-- ref: http://hackage.haskell.org/package/liboleg

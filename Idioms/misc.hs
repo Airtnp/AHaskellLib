@@ -139,3 +139,6 @@ testa3 = 1 - 2 -! add4 1  5 !- 3 * 4
 -- 17 = (1-2) + (1+5) + (3*4) 
 testa4 = 1 - 2 -! sub3 1  !- 3 * 4 
 -- -12 = (1-2) + (1) - 12
+
+-- Introduction to IO
+-- ref: https://wiki.haskell.org/Introduction_to_IO
