@@ -110,3 +110,32 @@ sum (x:xs) = x + sum xs
 -}
 
 -- $ ghc -ddump-tc A.hs 2>&1 | sed '/^\=/d;/AbsBinds/d;/ *\[\]$/d'
+
+
+-- Infix expressions
+
+--  xs `zipWith (+)` ys
+
+infixr 0 -:, :-
+data Infix f y = f :- y
+-- x -:f:- y = x `f` y
+-- main = print $ [1,2,3] -: zipWith (+) :- [4,5,6]
+
+-- For completeness, here's the `dual':
+
+infixl 5 -!
+(-!) = flip ($)
+infixl 5 !-
+(!-) = ($)
+ 
+add2 x y = x + y
+add3 x y z = x + y + z
+add4 x y z u = x + y + z + u
+sub3 x y z = x + y - z
+ 
+testa1 = 1 -! add2 !- 3 + 4
+testa2 = 1 -! add3 1 !- 3 + 4
+testa3 = 1 - 2 -! add4 1  5 !- 3 * 4
+-- 17 = (1-2) + (1+5) + (3*4) 
+testa4 = 1 - 2 -! sub3 1  !- 3 * 4 
+-- -12 = (1-2) + (1) - 12
