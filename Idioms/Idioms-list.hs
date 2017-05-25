@@ -83,3 +83,6 @@
 
 -- liboleg
 -- ref: http://hackage.haskell.org/package/liboleg
+
+-- Haskell-stuff
+-- ref: https://github.com/dramforever/haskell-stuff

@@ -1,0 +1,2 @@
+-- Type families
+-- ref: https://wiki.haskell.org/Type_family
