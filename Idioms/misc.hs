@@ -143,3 +143,8 @@ testa4 = 1 - 2 -! sub3 1  !- 3 * 4
 -- Introduction to IO
 -- ref: https://wiki.haskell.org/Introduction_to_IO
 
+
+
+-- Lens
+-- ref: https://wiki.haskell.org/Lens
+-- see hello_world/lens

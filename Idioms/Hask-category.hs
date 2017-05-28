@@ -6,6 +6,7 @@
 --     : https://hackage.haskell.org/package/category-extras
 --     : https://en.wikibooks.org/wiki/Haskell/Category_theory
 --     : http://science.raphael.poss.name/categories-from-scratch.html
+--     : https://www.zhihu.com/question/60402335/answer/175679814
 
 module Hask where
 
@@ -310,6 +311,13 @@ class Monoid a where
 
 data Day f g a = forall b, c. Day (f b) (g c) ((b, c) -> a)
 
+-- or
+data Day f g a where
+    Day :: forall u v. f u -> g v -> (u -> v -> a) -> Day f g a
+
+liftA2 :: (u -> v -> a) -> F u -> F v -> F a
+liftA2 :: Day F F a -> F a
+
 instance Functor (Day f g) where
     fmap f (Day fb gc h) = Day (fb gc (f . h))
 
@@ -351,6 +359,8 @@ class Applicative m => Monad m where
   (>=>)   :: forall a b c. (a -> m b) -> (b -> m c) -> (a -> m c)
   -- Join way
   join :: forall a. f (f a) -> f a
+  join :: Compose F F a -> F a
+
 
 {-
   join m = m >>= id

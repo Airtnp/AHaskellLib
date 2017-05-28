@@ -4,6 +4,7 @@
 -- abstract data type
 -- An abstract data type is a type with associated operations, 
 -- but whose representation is hidden.
+-- parameterized data type
 
 data Tree a = Nil | Node { left :: Tree a, value :: a, right :: Tree a }
 
