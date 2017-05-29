@@ -215,3 +215,78 @@ With some limitations, File and Database IO regions can be implemented already i
     A basic treatment of the relationship between type classes and modules (in the SML sense of modules) can be found at http://www.mpi-sws.org/~dreyer/papers/mtc/main-short.pdf and http://www.cse.unsw.edu.au/~chak/papers/modules-classes.pdf
 
 -}
+
+-- Mutually recursive modules
+
+-- Mutually recursive modules are modules that import each other. This way it is not possible to find a sequence to compile them one after another. This is a typical problem of languages with a strong module system, in contrast to languages like C, where all parts of a program are merged textually by the preprocessor before compiling them.
+
+module A where
+ 
+import B
+ 
+ 
+module B where
+ 
+import A
+
+-- If possible, mutually recursive modules should be avoided, since they complicate module dependencies. Once you have mutually recursive modules in a package, you will no longer be able to put modules of an import cycle into different packages, because mutually recursive packages are not supported.
+
+-- GHC supports mutually recursive modules in a limited way and requires additional information. You must break the data dependency cycles manually by creating .hs-boot files. Up to version 6.10 it is not possible to create mutually recursive class definitions across modules, e.g.
+
+module A where
+ 
+import B
+ 
+class B t => A t where
+   ...
+ 
+ 
+module B where
+ 
+import A
+ 
+class B t where
+   f :: A t => t -> t
+
+-- Not all mutual recursion can be solved by adding *.hs-boot files. For instance:
+
+-- In the protocol-buffers package message definitions are used to generate Haskell source files. The messages *.hs files could be mutually recursive, and in easy cases the mutual recursion can be solved by adding *.hs-boot files and {- SOURCE -} pragmas. In difficult cases it is impossible to solve the recursion through adding *.hs-boot files, and in these cases the protocol-buffers package generates additional modules to break the difficult recursion cycles. Happily, the API of the message *.hs files does not change, and all the complexity is kept under the hood.
+
+-- There are some ways to avoid mutually recursive imports, which we will describe below.
+
+-- Use type parameters
+
+-- If you have the definitions
+
+module A where
+ 
+import B
+ 
+data A = A B
+ 
+ 
+module B where
+ 
+import A
+ 
+data B = B A
+
+-- then you can break the cycle by adding a type parameter to one of these data declarations. By thinking about that possibility you might find that you want to generalize one of the data structures anyway. This yields:
+
+module A where
+ 
+data A b = A b
+ 
+ 
+module B where
+ 
+import A
+ 
+data B = B (A B)
+
+-- This way you only generalize the data structure. All functions that use A may use it with the fixed type argument B.
+
+-- Global type definitions
+
+-- Some packages use to define all data types and classes in one module of the package. These types are then imported by all other modules of the package. This may however conflict with the use of qualified names, since in this style clashes of unqualified type identifiers in the type definition module are more likely.
+
