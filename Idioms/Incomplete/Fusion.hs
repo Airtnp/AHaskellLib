@@ -1,0 +1,3 @@
+-- Fusion (Short cut fusion)
+-- ref: https://wiki.haskell.org/Fusion
+-- ref: https://wiki.haskell.org/Correctness_of_short_cut_fusion

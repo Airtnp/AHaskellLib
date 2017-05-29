@@ -31,6 +31,9 @@
 -- Extension
 -- ref: https://wiki.haskell.org/Category:Language_extensions
 
+-- Program transformation
+-- ref: https://wiki.haskell.org/Category:Program_transformation
+
 -- Point-free
 -- ref: https://wiki.haskell.org/Pointfree
 
