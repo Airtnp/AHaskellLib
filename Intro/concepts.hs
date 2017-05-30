@@ -161,3 +161,109 @@ data Node = Layer {
         props :: [(String, Float)],
         image :: String
     }
+
+-- Algebraic data type
+-- :+:/:*:
+
+data (:*:) a b = a :*: b
+data (:+:) a b = L a | R b
+
+class Generic a where
+    type Rep a :: *
+    from :: a -> Rep a
+    to :: Rep a -> a
+
+instance Generic Bool where
+    type Rep Bool = U :+: U
+    from = fromBool
+    to = toBool
+
+class GEq a where
+    geq :: a -> a -> Bool
+    default geq :: (Generic a, GEq (Rep a)) => a -> a -> Bool
+    geq a b = geq (from a) (from b)
+
+instance (GEq a, GEq b) => GEq (a :+: b) where
+    geq (L a1) (L a2) = geq a1 a2
+    geq (R b1) (R b2) = geq b1 b2
+    geq _ _ = False
+
+instance (GEq a, GEq b) => GEq (a :*: b) where
+    geq (a1 :*: b1) (a2 :*: b2) = geq a1 a2 .&. geq b1 b2
+
+instance GEq U where
+    geq U U = True
+
+-- DeriveAnyClass
+
+-- idA - A --to/from-- Rep A - idB
+--       |               | 
+--instance --to/from-- instance
+
+-- If A - B 同构 -> Rep A -> Rep B
+
+data UI p = UI deriving (Eq, Show)
+data (:*:) a b p = a p :*: b p deriving (Eq, Show)
+data (:+:) a b p = L (a p) | R (b p) deriving (Eq, Show)
+
+class Generic (a :: *) where
+    type family Rep a :: * -> *
+    from :: a -> Rep a x
+    to :: Rep a x -> a
+
+class GenericI (f :: * -> *) where
+    type RepI f :: * -> *
+    fromI :: f p -> RepI f p
+    toI :: RepI f p -> f p
+
+newtype Par p = Par { unPar :: p } deriving Show
+newtype Rec a p = Rec { unRec :: a p } deriving Show
+
+data List a = Nil | Cons a (List a)
+data Tree a = Leaf | Node a (Tree a) (Tree a)
+
+instance GenericI List where
+    type RepI List = UI :+: (Par :*: (Rec List))
+    fromI Nil = L UI
+    fromI (Cons a xs) = R (Par a :*: Rec xs)
+    toI (L UI) = Nil
+    toI (R (Par a :*: Rec xs)) = Cons a xs
+
+instance GenericI Tree where
+    type RepI Tree = UI :+: (Par :*: (Rec Tree) :*: (Rec Tree))
+    fromI Leaf = L UI
+    fromI (Node n l r) = R (Par n :*: Rec l :*: Rec r)
+    toI (L UI) = Leaf
+    toI (R (Par n :*: Rec l :*: Rec r)) = Node n l r
+
+class GFunctor (f :: * -> *) where
+    gfmap :: (a -> b) -> (f a -> f b)
+    default gfmap :: (GenericI f, GFunctor (RepI f)) => (a -> b) -> (f a -> f b)
+    gfmap f x = toI (gfmap f (fromI x))
+
+instance GFunctor UI where
+    gfmap f UI = UI
+
+instance (GFunctor a, GFunctor b) => GFunctor (a :*: b) where
+    gfmap f (a :*: b) = gfmap f a :*: gfmap f b
+
+instance (GFunctor a, GFunctor b) => GFunctor (a :+: b) where
+    gfmap f (L a) = L (gfmap f a)
+    gfmap f (R a) = R (gfmap g a)
+
+instance GFunctor Par where
+    gfmap f (Par a) = Par (f p)
+
+instance GFunctor Tree
+instance GFunctor List
+
+newtype MI i e (f :: * -> *) p = MI { unMI :: f p }
+data D -- data type
+data C -- data constructor type
+data S -- record type
+type DI = MI D
+type CI = MI C
+type SI = MI S
+class Datatype d
+class Selector s
+class Constructor c
