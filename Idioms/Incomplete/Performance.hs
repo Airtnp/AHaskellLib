@@ -1,0 +1,2 @@
+-- Performance
+-- ref: https://wiki.haskell.org/Performance

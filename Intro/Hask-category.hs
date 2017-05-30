@@ -178,6 +178,16 @@ instance ContraFunctor (Op a) where
     即对于范畴C上的态射f: a -> b，
     满足交换关系G f o t_a = t_b o F f，
     则称变换t: F => G是函子 F和 G的自然变换。
+
+    C:
+    a    ----f---- b
+
+    D:
+    F a  ---t_a--- G a
+     |              |
+    F f            G f
+     |              |
+    F b  ---t_b--- G b
 -}
 
 -- No G f o t_a = t_b o F f restrict (manually ensure it in definition)
@@ -441,3 +451,27 @@ instance Monad m => Arrow (Kleisli m) where
 -- Profunctor
 
 -- Kleisli Category
+
+
+-- AST and Category
+
+-- In category theory, a branch of mathematics, an initial object of a category C is an object I in C such that for every object X in C, there exists precisely one morphism I → X.
+-- The dual notion is that of a terminal object (also called terminal element): T is terminal if for every object X in C there exists a single morphism X → T. Initial objects are also called coterminal or universal, and terminal objects are also called final.
+-- If an object is both initial and terminal, it is called a zero object or null object. A pointed category is one with a zero object.
+
+-- 在数学领域，范畴C的对象I称为始对象（或初始对象），若对任何对象X，从I到X的态射唯一，或者说，C(I,X)为单元素集合。终对象（或终止对象、终结对象）是始对象的对偶概念。范畴C的对象T称为终对象，若对任何对象X，从X到T的态射唯一。若某对象即是始对象又是终对象，则称其为零对象。
+
+-- 范畴Set(以集合为对象，函数为态射)的唯一始对象为空集。空集到任何集合的态射只有唯一的一个空映射。任意单元素集合均为Set的终对象。任何集合到单元素集合只有一个把所有元素都映射到该单元素的态射。单元素集合之间互相同构。Set不存在零对象。
+
+-- Hask Category -> AST Category (?)
+
+    -- Initial Encoidng
+        -- AST as datatype
+        -- Functions operate on AST using pattern matching
+        
+
+    -- Final Encoding
+        -- AST as type class
+        -- Functions are instances of the type class
+        -- Instance type denotes the semantic domain of AST
+        -- 指称语义

@@ -290,3 +290,93 @@ data B = B (A B)
 
 -- Some packages use to define all data types and classes in one module of the package. These types are then imported by all other modules of the package. This may however conflict with the use of qualified names, since in this style clashes of unqualified type identifiers in the type definition module are more likely.
 
+
+-- Not just Maybe
+
+-- Note: Many now consider the fail method of Monad to be a failure, as it defaults to throwing an exception. Modern Haskell style tends towards using total functions wherever possible, and this idiom has come increasingly to be frowned upon.
+
+-- Non-trivial type synonyms
+
+-- To avoid Miles/Km , feet/metres goofs:
+
+{-
+
+    Rather than
+
+        type Miles = Int
+    use
+
+        newtype Miles = Miles Int
+        
+    together with
+
+	toMiles :: Int -> Miles
+	fromMiles :: Miles -> Int
+
+    these can be redefined to be "id" later, after the code is stablized.
+
+    No need to change things : The functions toMiles and fromMiles is already effectively id !
+
+    A newtype definition just generates a new type whose implementation is the same as the old one.
+    The constructor (and possibly selector) really does nothing except coerce between the new type and the old one.
+
+    So as undefined is Haskell's notation for bottom
+        toMiles undefined === undefined
+    which isn't the case if we use a data definition.
+
+    Structures might be a bit more convenient here.
+
+    newtype Miles = Miles { fromMiles :: Int }
+    toMiles = Miles
+        {- or just use Miles, though this is harder to excise later -}
+    For tracking more complex units, you may be able to get some of the way by using phantom types or creative use of functional dependencies.
+
+
+
+-}
+
+
+-- Obfuscation
+-- ref: https://wiki.haskell.org/Obfuscation
+
+-- IOHCC
+
+-- Parallel machine
+
+-- There are two reasonable ways to define an applicative functor instance for lists. Both of them simulate kinds of parallel computers:
+
+    -- The plain instance simulates a non-deterministic computer. This instance can also be generalized to monads.
+
+    -- The applicative functor instance of the ZipList wrapper simulates a SIMD (single-instruction multiple-data) computer.
+
+-- Partial application
+
+-- Partial application in Haskell involves passing less than the full number of arguments to a function that takes multiple arguments.
+
+-- Partial signatures
+
+-- "The regular (full) signature of a function specifies the type of the function and -- if the type includes constrained type variables -- enumerates all of the typeclass constraints. The list of the constraints may be quite large. Partial signatures help when:
+
+    -- we wish to add an extra constraint to the type of the function but we do not wish to explicitly write the type of the function and enumerate all of the typeclass constraints,
+    -- we wish to specify the type of the function and perhaps some of the constraints -- and let the typechecker figure out the rest of them.
+
+
+
+-- Parallelism vs. Concurrency
+-- ref: https://ghcmutterings.wordpress.com/2009/10/06/parallelism-concurrency/
+
+    -- The term Parallelism refers to techniques to make programs faster by performing several computations in parallel. This requires hardware with multiple processing units. In many cases the sub-computations are of the same structure, but this is not necessary. Graphic computations on a GPU are parallelism. Key problem of parallelism is to reduce data dependencies in order to be able to perform computations on independent computation units with minimal communication between them. To this end it can be even an advantage to do the same computation twice on different units.
+
+    -- The term Concurrency refers to techniques that make program more usable. Concurrency can be implemented and is used a lot on single processing units, nonetheless it may benefit from multiple processing units with respect to speed. If an operating system is called a multi-tasking operating system, this is a synonym for supporting concurrency. If you can load multiple documents simultaneously in the tabs of your browser and you can still open menus and perform more actions, this is concurrency.
+
+    -- If you run distributed-net computations in the background while working with interactive applications in the foreground, that is concurrency. On the other hand dividing a task into packets that can be computed via distributed-net clients, this is parallelism.
+
+    -- Let me tell an anecdote to further sharpen the difference: Amiga computers were always advertised for their multi-tasking operating system. However DOS/Windows-3.1 users were never attracted by this advertisement since they argued that a single CPU cannot be made faster by performing several tasks in an interleaved way. They were right, but this was not the point: Multitasking allows to avoid that the computer gets bored. Indeed in the eighties Amiga computers were considered great for raytracing. However the special graphics and sound hardware in Amiga computers could not help with raytracing. The important advantage was, that you could perform the graphics rendering concurrently to your daily work (office applications) without noticing the computation load of the raytracing. Multitasking just assigns the time between your keystrokes to the raytracer. However multitasking was not possible with most games, office software that eats all the memory or simply crashing applications. This leads to another confusing area: Error vs. Exception.
+
+    -- If you need getNumCapabilities in your program, then your are certainly programming parallelism.
+    -- If your parallelising efforts make sense on a single processor machine, too, then you are certainly programming concurrency.
+
+
+-- Peano numbers
+
+data Peano = Zero | Succ Peano

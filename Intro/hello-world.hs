@@ -913,7 +913,7 @@ greetMain = do
 -- monad can change properties of functor
     -- m a -> (a -> m b) -> m b
 
--- do-notation
+-- do notation
 -- simple act === act >>
 -- y x <- t === >>= \x -> t === (\x -> t) y
 -- let xxx = yyy === let xxx = yyy in
@@ -1360,7 +1360,7 @@ instance Traversable BinaryTree_alt where
 
 -- ReaderT
 
--- encap r -> ma Monad function instead of r -> a in Reader
+-- encap r -> m a Monad function instead of r -> a in Reader
 newtype ReaderT r m a = ReaderT { runReaderT :: r -> m a }
 
 instance (Functor m) => Functor (ReaderT r m) where
