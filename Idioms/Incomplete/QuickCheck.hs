@@ -1,0 +1,3 @@
+-- QuickCheck
+-- ref: https://wiki.haskell.org/QuickCheck_as_a_test_set_generator
+-- ref: https://wiki.haskell.org/QuickCheck_/_GADT
