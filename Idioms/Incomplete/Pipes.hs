@@ -1,0 +1,3 @@
+-- Pipes
+-- ref: https://wiki.haskell.org/Pipes
+-- ref: http://www.yesodweb.com/blog/2013/10/core-flaw-pipes-conduit
