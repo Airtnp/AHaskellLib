@@ -1,5 +1,6 @@
 -- Polyvariadic functions
 -- ref: https://wiki.haskell.org/Polyvariadic_functions
+-- ref: https://wiki.haskell.org/Varargs
 -- oleg: http://okmij.org/ftp/Haskell/polyvariadic.html#polyvar-fn
 
 -- It is sometimes claimed that Haskell does not have polyvariadic functions. Here we demonstrate how to define functions with indefinitely many arguments; those arguments do not have to be of the same type.

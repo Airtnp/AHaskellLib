@@ -13,6 +13,9 @@
 -- Theoretical-Foundations
 -- ref: https://wiki.haskell.org/Category:Theoretical_foundations
 
+-- Functional pearls
+-- ref: https://wiki.haskell.org/Research_papers/Functional_pearls
+
 -- Mathematics
 -- ref: https://wiki.haskell.org/Category:Mathematics
 

@@ -1,6 +1,8 @@
 -- Lifting
 -- ref: https://wiki.haskell.org/Lifting
 -- ref: https://wiki.haskell.org/Lifting_pattern
+-- ref: https://wiki.haskell.org/Worker_wrapper
+
 
 -- transform a function into a corresponding function within another (usually more general) setting (category).
 -- hom in difference category
@@ -91,3 +93,55 @@ rev' (x:xs) ys = rev' xs (x:ys)
 -- A major reason is that sometimes bindings are sufficiently generic that they are useful in other contexts. You can avoid rewriting common things by lifting them. The prelude contains many things that could have started out as helper functions at one point but which have been lifted to the program and finally to the language level due to the fact that they are generically useful. Especially the many simple but useful list functions. Indeed, if one is not aware of what is in the prelude, one will probably end up writing at least a few of those on one's own. 
 
 -- Another reason is testability. In the first version, you can't directly test the unlifted function (say, using one of the Unit testing frameworks). By lifting the definition to the outer level, you can directly test it.
+
+-- Worker wrapper
+
+-- It is sometimes easier or more efficient to write functions which have particular "start arguments" or that pass state. When this is the case write wrappers rather than trying to code within the original signature.
+
+{-
+
+Accumulator examples
+e.g. the function reverse
+
+reverse :: [a] -> [a]
+could be written
+
+reverse [] = []
+reverse (x:xs) =  reverse xs ++ [x]
+however this will be more efficient if it were written
+
+reverse xs = revWorker [] xs
+ 
+revWorker s [] = s
+revWorker s (x:xs) = revWorker (x:s) xs
+note often a worker will also return some state along with a result which can be stripped away.
+
+revWorker could be considered a generally useful function. revWorker x y is equivalent to, but probably faster than, reverse y ++ x.
+
+Other examples
+Wrappers are often used to play the role of loop initialisation in imperative languages. For example:
+
+fib n = fibWorker n 0 1
+ 
+fibWorker n f1 f2
+ | n == 0    = f1
+ | otherwise = fibWorker (n-1) f2 (f1+f2)
+
+Hiding the worker
+Also, often one hides the worker(s) with a where (or let). E.g. :
+
+fib = fibWorker 0 1
+  where
+  fibWorker f0 f1 n
+    | n == 0  = f0
+    | True    = fibWorker f1 (f0 + f1) (n-1)
+Of course, one then has to de-hide the worker if one want to test it with different initial arguments.
+
+In some cases, though, the worker can be a generally useful function on its own merits, in that case one obviously shouldn't hide it.
+
+
+One common case is where you want to subject the worker function to Unit testing. In such a situation, the test suite has to be able to get to the worker function. Another is where the worker might be a candidate for further abstraction. (See Higher order function for examples.)
+
+Moving a worker to a higher level (which may require some Lambda lifting) is known as Let floating.
+
+-}
