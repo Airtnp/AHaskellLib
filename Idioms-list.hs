@@ -19,6 +19,9 @@
 -- Type-level programming
 -- ref: https://wiki.haskell.org/Category:Type-level_programming
 
+-- How to
+-- ref: https://wiki.haskell.org/Category:How_to
+
 -- Article
 -- ref: https://wiki.haskell.org/Category:Article
 

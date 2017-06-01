@@ -380,3 +380,40 @@ data B = B (A B)
 -- Peano numbers
 
 data Peano = Zero | Succ Peano
+
+-- Separating shape and content
+-- ref: https://mail.haskell.org/pipermail/haskell-cafe/2006-September/018204.html
+
+{-
+
+An interesting programming technique in Haskell is to encode a data structure as two separate structures, one defining the shape of the overall data, and the other defining the content.
+
+This is used, for one, in nested data parallelism, to distribute nested arrays as flat arrays + a shape descriptor across a network.
+
+-}
+
+-- Top-level vs. local recursion
+
+{-
+
+Compare the following two implementations of map. The first one uses top-level recursion
+
+map :: (a -> b) -> [a] -> [b]
+map _ []     = []
+map f (x:xs) = f x : map f xs
+whereas the second one uses local recursion
+
+map :: (a -> b) -> [a] -> [b]
+map f =
+   let go []     = []
+       go (x:xs) = f x : go xs
+   in  go
+Although the first version is shorter, there are reasons to prefer the second version for stylistic reasons:
+
+It clearly shows that the 'f' is not "altered" in the recursion.
+You cannot accidentally jump into the wrong loop. I often implement the same function more than once for comparison. The implementations may differ in laziness or performance. Their names are only slightly different and it happened too often that after copy&paste&name-change the recursive call went to the original (and thus wrong) function.
+The local loop is probably also more efficient in execution, because the compiler does not need to move the f around. However, if this is actually more efficient then the compiler should do such a transformation itself.
+Btw. the best implementation is probably foldr (\x acc -> f x : acc) []
+which is both short and allows deforestation.
+
+-}

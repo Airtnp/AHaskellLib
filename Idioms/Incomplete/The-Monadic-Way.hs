@@ -1,0 +1,2 @@
+-- The Monadic Way
+-- ref: https://wiki.haskell.org/The_Monadic_Way
