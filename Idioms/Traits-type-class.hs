@@ -1,5 +1,6 @@
 -- Traits type class
 -- ref: https://wiki.haskell.org/Traits_type_class
+-- ref: https://wiki.haskell.org/Reified_type
 -- blog: http://augustss.blogspot.nl/2007/04/overloading-haskell-numbers-part-3.html
 
 -- Occasionally you want to associate information with a type, not just a value. An example is the standard Bounded class:
@@ -60,3 +61,15 @@ data GreekLanguage = GreekLanguage
 instance CaseConvert GreekLanguage where
     toUpperCase _ s = {- etc -}
     toLowerCase _ s = {- etc -}
+
+-- Reified type
+
+{-
+
+To "reify" something is to take something that is abstract and regard it as material. A classic example is the way that the ancients took abstract concepts (e.g. "victory") and turned them into deities (e.g. Nike, the Greek goddess of victory).
+
+A reified type is a value that represents a type. Using reified types instead of real types means that you can do any manipulations with them that you can do with values.
+
+In Haskell, the value undefined is a member of every (boxed) type, so that is often a good value to use to represent a type, assuming you don't need to break it apart.
+
+-}

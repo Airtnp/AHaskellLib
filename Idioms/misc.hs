@@ -417,3 +417,52 @@ Btw. the best implementation is probably foldr (\x acc -> f x : acc) []
 which is both short and allows deforestation.
 
 -}
+
+-- Type variables instead of concrete types
+
+{-
+
+If you are new to Haskell you may think that type variables and polymorphism are fancy things that are rarely used. Maybe you are surprised that type variables and type class constraints can increase safety and readability also if you are eventually using only one concrete type.
+
+Imagine the Prelude would contain the following functions:
+
+maximum :: [Integer] -> Integer
+sum :: [Integer] -> Integer
+Sure, the names are carefully chosen and thus you can guess what they do. But the signature is not as expressive as it could be. Indeed these functions are in the Prelude but with a more general signature.
+
+maximum :: (Ord a) => [a] -> a
+sum :: (Num a) => [a] -> a
+These functions can also be used for Integers,
+but the signatures show which aspects of integers are actually required.
+
+We realize that maximum is not about numbers, but can also be used for other ordered types, like Char. We can also conclude that maximum [] is undefined, since the Ord class has no function to construct certain values and the input list does not contain an element of the required type.
+
+Now consider that you have a complex function that is hard to understand.
+
+It is fixed to a concrete type, say Double.
+You want to divide that function into a function that does the processing of the structure
+
+and another function which does the calculations with Double.
+This is good style in the sense of the "Separation of concerns" idiom. You do it, because you want to untangle the explicit recursion, which is hard to understand of its own, and the calculation, which also has pitfalls.
+
+The structure processing does not know about the Double and it is wise to use type variables instead of Double Making the example more concrete, look at a state monad transformer StateT
+which shall be nested by a nesting depth that is only known at runtime.
+
+Ok that's not possible, so just consider a State applicative functor, that shall be nested the same way.
+The functor depends on an input of the same type as its functor output,
+
+that is we nest functions of type (Double -> State Double Double).
+The nested functor has a list of state values as state value. The nesting depth depends on the length of the list of state values. (This design also forbids transformer techniques for general applicative functors.)
+
+We could write a nesting function fixed to type Double
+stackStates :: (Double -> State Double Double) -> (Double -> State [Double] Double)
+but it is too easy to mix up state and return value here, because they have the same type. You should really separate that
+
+stackStates :: (a -> State s a) -> (a -> State [s] a)
+stackStates m  =  State . List.mapAccumL (runState . m)
+also if you only use it for Double.
+This way the type checker asserts, that you never mix up the state with the other type.
+
+
+
+-}

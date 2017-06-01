@@ -1,7 +1,8 @@
 -- Type arithmetic
 -- ref: https://wiki.haskell.org/Type_arithmetic
 -- oleg: http://article.gmane.org/gmane.comp.lang.haskell.general/13223
--- 
+-- ref: https://wiki.haskell.org/Typeful_symbolic_differentiation
+-- oleg: https://mail.haskell.org/pipermail/haskell/2004-November/014939.html
 
 -- Type arithmetic (or type-level computation) are calculations on the type-level, often implemented in Haskell using functional dependencies to represent functions.
 
@@ -150,4 +151,8 @@ Ok good, and:
 -}
 
 -- It's possible to embed the Turing-complete SK combinator calculus at the type level.
+
+-- Typeful symbolic differentiation
+
+-- "A `symbolic' differentiator for a subset of Haskell functions (which covers arithmetics and a bit of trigonometry). We can evaluate our functions _numerically_ -- and differentiate them _symbolically_. Partial derivatives are supported as well."
 
