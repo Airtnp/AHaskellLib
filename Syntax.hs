@@ -117,3 +117,217 @@ Useful
                 return ((x,y,z),x+y+z))
 
 -}
+
+
+-- Formatting function types
+
+
+hPutBuf :: Handle                       -- handle to write to
+        -> Ptr a                        -- address of buffer
+        -> Int                          -- number of bytes of data in buffer
+        -> IO ()
+
+-- If-Then-Else
+
+-- Haskell without if-then-else syntax makes Haskell more logical and consistent. There is no longer confusion to beginners like: "What is so special about if-then-else, that it needs a separate syntax? I though it could be simply replaced by a function. Maybe there is some subtlety that I'm not able to see right now." There is no longer confusion with the interference of if-then-else syntax with do notation. Removing if-then-else simplifies every language tool, say compiler, text editor, analyzer and so on.
+
+-- replace it by
+
+if' :: Bool -> a -> a -> a
+if' True  x _ = x
+if' False _ y = y
+
+-- Let vs. Where
+
+-- Let: better 
+f :: State s a
+f = State $ \x ->
+   let y = ... x ...
+   in  y
+
+-- Where: better
+
+f x
+  | cond1 x   = a
+  | cond2 x   = g a
+  | otherwise = f (h x a)
+  where
+    a = w x
+
+-- vs. 
+
+f x
+  = let a = w x
+    in case () of
+        _ | cond1 x   -> a
+          | cond2 x   -> g a
+          | otherwise -> f (h x a)
+
+f x =
+   let a = w x
+   in  select (f (h x a))
+          [(cond1 x, a),
+           (cond2 x, g a)]
+
+f x
+  = let a = w x
+    in if cond1 x
+       then a
+       else if cond2 x
+       then g a
+       else f (h x a)
+
+-- One other approach to consider is that let or where can often be implemented using lambda lifting and let floating, incurring at least the cost of introducing a new name. The above example:
+
+-- where can hide the CAF, whereas let explicitly show them
+
+-- In the second case, fib' is redefined for every argument x. The compiler cannot know whether you intended this -- while it increases time complexity it may reduce space complexity. Thus it will not float the definition out from under the binding of x.
+
+
+-- In contrast, in the first function, fib' can be moved to the top level by the compiler. The where clause hid this structure and made the application to x look like a plain eta expansion, which it is not.
+
+
+fib =
+    let fib' 0 = 0
+        fib' 1 = 1
+        fib' n = fib (n - 1) + fib (n - 2)
+    in  (map fib' [0 ..] !!)
+
+fib x =
+    let fib' 0 = 0
+        fib' 1 = 1
+        fib' n = fib (n - 1) + fib (n - 2)
+    in  map fib' [0 ..] !! x
+
+-- List comprehension
+
+-- No export lists
+
+module Important (
+   {- * Important functions -}
+   foo,
+ 
+   {- * Important data types -}
+   Number(One,Two,Three)) where
+ 
+ 
+{- | most important function -}
+foo :: Int
+foo = 2
+ 
+{- | most important data type -}
+data Number =
+     Zero
+   | One
+   | Two
+   | Three
+   | Many
+
+-- Pattern guard
+
+lookup :: FiniteMap -> Int -> Maybe Int
+ 
+addLookup env var1 var2
+   | Just val1 <- lookup env var1
+   , Just val2 <- lookup env var2
+   = val1 + val2
+{-...other equations...-}
+
+-- will check to see if both lookups succeed, and bind the results to val1 and val2 before proceeding to use the equation.
+
+-- Pronunciation
+
+-- infix
+-- partial: section
+
+
+-- Syntax Suger
+-- cons: https://wiki.haskell.org/Syntactic_sugar/Cons
+-- pros: https://wiki.haskell.org/Syntactic_sugar/Pros
+-- ref: https://wiki.haskell.org/ThingsToAvoid/Discussion
+
+-- Terminator vs. separator
+
+-- Terminator: There is one symbol after each element.
+-- Separator: There is a symbol between each element. This is what the functions Data.List.intersperse and Data.List.unwords generate. In Haskell language, the following syntaxes allow separators only:
+
+{-
+
+Liberal choice between separators and terminators:
+
+export lists: module A(a,b,c) where and module A(a,b,c,) where (and module A(a,b,c,,,) where ...)
+import lists: import A(a,b,c) and import A(a,b,c,)
+let syntax: let a = 'a'; b = 'b' in ... and let a = 'a'; b = 'b'; in ...
+do syntax: do a ; b and do a; b;
+
+-}
+
+-- Unary operator
+
+-- In Haskell there is only one unary operator, namely the unary minus. It has been discussed in length, whether the unary minus shall be part of numeric literals or whether it shall be an independent operator.
+
+-- View pattern 
+-- ref: https://ghc.haskell.org/trac/ghc/wiki/ViewPatterns
+
+type Typ
+
+data TypView = Unit
+            | Arrow Typ Typ
+
+view :: Typ -> TypView
+
+-- additional operations for constructing Typ's ...
+
+-- In current Haskell, using this signature is a little inconvenient: It is necessary to iterate the case, rather than using an equational function definition. And the situation is even worse when the matching against t is buried deep inside another pattern. In response, programmers sometimes eschew type abstraction in favor of revealing a concrete datatype that is easy to pattern-match against.
+
+size :: Typ -> Integer
+size t = case view t of
+    Unit -> 1
+    Arrow t1 t2 -> size t1 + size t2
+
+-- View patterns permit calling the view function inside the pattern and matching against the result:
+
+size (view -> Unit) = 1
+size (view -> Arrow t1 t2) = size t1 + size t2
+
+{-
+
+Scoping for expr -> pat:
+
+The variables bound by the view pattern are the variables bound by pat.
+Any variables in expr are bound occurrences. Variables bound by patterns to the left of a view pattern expression are in scope. For example:
+In function definitions, variables bound by matching earlier curried arguments may be used in view pattern expressions in later arguments.
+   example :: (String -> Integer) -> String -> Bool
+   example f (f -> 4) = True
+Variables can be bound to the left in tuples and data constructors:
+   example :: ((String -> Integer,Integer), String) -> Bool
+   example ((f,_), f -> 4) = True
+Typing If expr has type t1 -> t2 and pat matches a t2, then the whole view pattern has type t1.
+
+Evaluation To match a value v against a pattern (expr -> pat), evaluate (expr v) and match the result against pat.
+
+-}
+
+-- Both pattern
+
+-- A "both pattern" pat1 & pat2 matches a value against both pat1 and pat2 and succeeds only when they both succeed. A special case is as-patterns, x@p, where the first pattern is a variable. Both patterns can be programmed using view patterns:
+
+both : a -> (a,a)
+both x = (x,x)
+
+f (both -> (xs, h : t)) = h : (xs ++ t)
+
+-- As-pattern
+
+-- x@p
+
+-- N+k patterns
+
+np :: Num a => a -> a -> Maybe a
+np k n | k <= n = Just (n-k)
+       | otherwise = Nothing
+
+fib :: Num a => a -> a
+fib 0 = 1
+fib 1 = 1
+fib (np 2 -> Just n) = fib (n + 1) + fib n
