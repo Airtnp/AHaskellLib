@@ -1,0 +1,4 @@
+-- Haskell programming tips
+-- ref: https://wiki.haskell.org/Haskell_programming_tips
+-- Programming guidelines
+-- ref: https://wiki.haskell.org/Programming_guidelines
