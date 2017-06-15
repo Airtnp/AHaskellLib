@@ -97,7 +97,7 @@ class ContraFunctor f where
 -- contrafmap (g . f) = fmap f . fmap g
 
 -- combine functors
-newtype Combine f g a = Compose {getCompose :: f (g a)}
+newtype Compose f g a = Compose {getCompose :: f (g a)}
     deriving (Show)
 
 instance (Functor f, Functor g) => Functor (Compose f g) where

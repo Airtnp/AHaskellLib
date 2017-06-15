@@ -89,3 +89,12 @@
 
 -- Haskell-stuff
 -- ref: https://github.com/dramforever/haskell-stuff
+
+-- Tying the loop
+    -- Reverse State Monad
+    -- Tardis monad
+    -- ref: http://chrisdone.com/posts/twitter-problem-loeb
+    -- ref: https://gist.github.com/paf31/9d84ecf6a6a9b69cdb597a390f25764d
+
+-- Haskell Util
+-- ref: https://www.reddit.com/r/haskelltil/search?q=flair%3Aidiom&restrict_sr=on&t=all

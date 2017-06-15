@@ -1,0 +1,2 @@
+-- Bottom and undefined
+-- ref: https://wiki.haskell.org/Bottom

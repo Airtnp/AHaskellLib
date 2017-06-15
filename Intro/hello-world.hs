@@ -287,6 +287,8 @@ scanr_alt f b (x:xs) =
 
 
 {- Ch7 Typeclass -}
+-- Constraints (=>) 也是 Mapping (->)，但是其参数是一个包含了 Show instance 实现的 record
+
 data PosTC = CartesianTC Double Double | PolarTC Double Double
 
 -- deriving: auto-derive typeclass
@@ -345,6 +347,26 @@ read_alt s = case [x | (x, t) <- reads s, ("", "") <- lex t] of
                 _ -> error "PreludeText.read: ambiguous parse"
 
 -- read (show (x :: a)) :: a = x (May not True)
+
+{-
+    class (Monad m) => Streams s m t | s -> t where
+        uncons :: s -> m (Maybe (t, s))
+
+-- Here s -> t represents
+--      for any s, only one type of t is allowed in instance 
+-- So, if we have s, we can decide t
+
+    parse :: Stream s Identity t => Parse s () a -> SourceName -> s -> Either ParseError a
+
+-- 比如，不能一个 instance 是 s 是 ByteString t 是 Char，另一个 s 是 ByteString t 是 Word8
+-- 比如我们 s 那个参数传一个 String 进去
+-- 那，s ~ String，我们发现有一个 instance Monad m => Stream [tok] m tok，那么我们就可以确定 t ~ Char 了（note that String ~ [Char]
+
+
+
+-}
+
+
 
 {- Ch8 Number Typeclass -}
 
