@@ -13,6 +13,7 @@ min_sub_list xs m = init_sum + min_diff
         min_diff = minimum $ scanl (+) 0 $ zipWith (-) shift xs
 
 -- In Haskell, better use merge. qsort has O(nlgn) space complexity
+-- ref: https://hackage.haskell.org/package/base-4.9.1.0/docs/src/Data.OldList.html#sort
 qsort :: Ord a => [a] -> [a]
 qsort [] = []
 qsort (x:xs) = qsort (filter (<x) xs) ++ [x] ++ qsort (filter (>=x) xs)

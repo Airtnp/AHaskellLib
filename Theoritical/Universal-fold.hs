@@ -1,4 +1,5 @@
 -- A tutorial on the universality and expressiveness of fold
+-- TODO: https://jeremykun.com/tag/foldr/
 
 -- foldr
 -- f x acc
