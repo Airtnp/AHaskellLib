@@ -403,3 +403,24 @@ import Control.Monad.Trans.Except
     mapExcept, mapExceptT, withExcept, withExceptT)
 
 -}
+
+-- Strings
+{-
+
+Variant           Module
+strict text       Data.Text
+lazy text         Data.Text.Lazy
+strict bytestring Data.ByteString
+lazy bytestring   Data.ByteString.Lazy
+
+                     Data.Text       Data.Text.Lazy      Data.ByteString    Data.ByteString.Lazy
+Data.Text            id              fromStrict          encodeUtf8         encodeUtf8
+Data.Text.Lazy       toStrict        id                  encodeUtf8         encodeUtf8
+Data.ByteString      decodeUtf8      decodeUtf8          id                 fromStrict
+Data.ByteString.Lazy decodeUtf8      decodeUtf8          toStrict           id
+
+-}
+
+-- Overloaded... (replace default types)
+-- Derived... (deriving typeclasses)
+
