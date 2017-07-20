@@ -22,8 +22,8 @@ instance Category Hask where
     (.) f g x = f (g x)
 
 instance Category (->) where
-    id = GHC.Base.id
-    (.) = (GHC.Base..)
+    id = GHC.Base.id -- Prelude.id
+    (.) = (GHC.Base..) -- (Prelude..)
 
 -- | Right-to-left composition
 (<<<) :: Category cat => cat b c -> cat a b -> cat a c

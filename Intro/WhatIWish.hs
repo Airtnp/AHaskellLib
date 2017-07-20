@@ -424,3 +424,350 @@ Data.ByteString.Lazy decodeUtf8      decodeUtf8          toStrict           id
 -- Overloaded... (replace default types)
 -- Derived... (deriving typeclasses)
 
+-- Applicative
+-- Alternative
+
+-- Arrows
+class Category cat where
+    id :: cat a a
+    (.) :: cat b c -> cat a b -> cat a c
+
+instance Category (->) where
+    id = Prelude.id
+    (.) = (Prelude..)
+
+(<<<) :: Category cat => cat b c -> cat a b -> cat a c
+(<<<) = (.)
+
+(>>>) :: Category cat => cat a b -> cat b c -> cat a c
+f >>> g = g . f
+
+class Category a => Arrow a where
+    arr :: (b -> c) -> a b c
+    first :: a b c -> a (b,d) (c,d)
+    second :: a b c -> a (d,b) (d,c)
+    (***) :: a b c -> a b' c' -> a (b,b') (c,c')
+    (&&&) :: a b c -> a b c' -> a b (c,c')
+
+-- See WIW/Circuit_and_Arrow
+-- ref: https://en.wikibooks.org/wiki/Haskell/Understanding_arrows
+
+class Arrow y => ArrowChoice y where
+    -- Minimal implementation: left
+    left  :: y a b -> y (Either a c) (Either b c)          -- maps over left choice
+    right :: y a b -> y (Either c a) (Either c b)          -- maps over right choice
+    (+++) :: y a c -> y b d -> y (Either a b) (Either c d) -- left and right combined
+    (|||) :: y a c -> y b c -> y (Either a b) c            -- (+++), then merge results
+
+class Arrow y => ArrowApply y where
+    app :: y (y a b, a) b -- applies first component to second
+
+instance Arrow (->) where
+    arr f = f
+    first f = f *** id
+    second f = id *** f
+    (***) f g ~(x,y) = (f x, g y)
+
+-- Bifunctor (canonically 2-tuple)
+class Bifunctor p where
+    bimap :: (a -> b) -> (c -> d) -> p a c -> p b d
+    first :: (a -> b) -> p a c -> p b c
+    second :: (b -> c) -> p a b -> p a c
+
+-- Polyvariadic Functions
+
+{-# LANGUAGE FlexibleInstances #-}
+class Arg a where
+    collect' :: [String] -> a
+
+-- extract to IO
+instance Arg (IO ()) where
+    collect' acc = mapM_ putStrLn acc
+
+-- extract to [String]
+instance Arg [String] where
+    collect' acc = acc
+
+instance (Show a, Arg r) => Arg (a -> r) where
+    collect' acc = \x -> collect' (acc ++ [show x])
+
+collect :: Arg t => t
+collect = collect' []
+
+-- t is derived to Char -> Int -> Int
+example :: [String]
+example = collect 'a' 2 3
+
+-- Exception
+-- Control.Exception
+-- Control.Monad.Catch
+-- ExceptT (Control.Monad.Except)
+-- Control.Spoon
+
+
+-- RWS 
+runReader :: Reader r a -> r -> a
+runWriter :: Writer w a -> (a, w)
+runState :: State s a -> s -> (a, s)
+
+runRWS :: RWS r w s a -> r -> s -> (a, s, w)
+execRWS :: RWS r w s a -> r -> s -> (s, w)
+evalRWS :: RWS r w s a -> r -> s -> (a, w)
+
+-- Cont
+runCont :: Cont r a -> (a -> r) -> r
+callCC :: MonadCont m => ((a -> m b) -> m a) -> m a
+cont :: ((a -> r) -> r) -> Cont r a
+
+newtype Cont r a = Cont { runCont :: ((a -> r) -> r) }
+
+instance Monad (Cont r) where
+    return a = Cont $ \k -> k a
+    (Cont c) >>= f = Cont $ \k -> c (\a -> runCont (f a) k)
+
+class (Monad m) => MonadCont m where
+    callCC :: ((a -> m b) -> m a) -> m a
+
+instance MonadCont (Cont r) where
+    callCC f = Cont $ \k -> runCont (f (\a -> Cont $ \_ -> k a)) k
+
+
+-- MonadPlus
+class Monad m => MonadPlus m where
+    mzero :: m a
+    mplus :: m a -> m a -> m a
+
+instance MonadPlus [] where
+    mzero = []
+    mplus = (++)
+
+instance MonadPlus Maybe where
+    mzero = Nothing
+    Nothing `mplus` ys = ys
+    xs `mplus` _ys = xs
+    Nothing `mplus` Nothing = Nothing
+
+-- MonadPlus is a monoid
+-- mzero `mplus` a = a
+--- a `mplus` mzero = a
+-- (a `mplus` b) `mplus` c = a `mplus` (b `mplus` c)
+
+when :: (Monad m) => Bool -> m () -> m ()
+when p s = if p then s else return ()
+
+guard :: MonadPlus m => Bool -> m ()
+guard True = return ()
+guard False = mzero
+
+msum :: MonadPlus m => [m a] -> m a
+msum = foldr mplus mzero
+
+-- MonadFix
+-- Similar to rec in -XRecursiveDo
+fix :: (a -> a) -> a
+fix f = let x = f x in x
+
+mfix :: (a -> m a) -> m a
+
+class Monad m => MonadFix m where
+    mfix :: (a -> m a) -> m a
+
+instance MonadFix Maybe where
+    mfix f = let a = f (unJust a) in a
+        where 
+            unJust (Just x) = x
+            unJust Nothing = error "mfix Maybe: Nothing"
+
+
+-- ST Monad
+runST :: (forall s. ST s a) -> a
+newSTRef :: a -> ST s (STRef s a)
+readSTRef :: STRef s a -> ST s a
+writeSTRef :: STRef s a -> a -> ST s ()
+
+-- Free Monad
+Pure :: a -> Free f a
+Free :: f (Free f a) -> Free f a
+
+liftF :: (Functor f, MonadFree f m) => f a -> m a
+retract :: Monad f => Free f a -> f a
+-- Free monads are monads which instead of having a join operation that combines computations, instead forms composite computations from application of a functor.
+join :: Monad m => m (m a) -> m a
+wrap :: MonadFree f m => f (m a) -> m a
+
+-- Indexed Monads
+-- Indexed monads are a generalisation of monads that adds an additional type parameter to the class that carries information about the computation or structure of the monadic implementation
+
+class IxMonad md where
+    return :: a -> md i i a
+    (>>=) :: md i m a -> (a -> md m o b) -> md i o b
+
+-- lifted-base
+-- monad-base
+-- monad-control
+
+
+-- Quantification
+
+-- Universal Quantification
+-- Universal quantification the primary mechanism of encoding polymorphism in Haskell. The essence of universal quantification is that we can express functions which operate the same way for a set of types and whose function behavior is entirely determined only by the behavior of all types in this span.
+-- {-# ExplicitForAll #-}
+
+-- Free theorems
+-- A universally quantified type-variable actually implies quite a few rather deep properties about the implementation of a function that can be deduced from its type signature. For instance the identity function in Haskell is guaranteed to only have one implementation since the only information that the information that can present in the body
+
+-- Type System
+
+-- Hindley-Milner type system
+{-
+
+e : x
+    | λx:t.e -- value abstraction
+    | e1 e2 -- application
+    | let x = e1 in e2 -- let
+
+t : t -> t -- function types
+    | a -- type variables
+
+σ : ∀ a . t -- type scheme
+
+-}
+
+-- In an implementation, the function generalize converts all type variables within the type into polymorphic type variables yielding a type scheme. Thefunction instantiate maps a scheme to a type, but with any polymorphic variables converted into unbound type variables.
+
+-- Rank-N Types
+-- System-F is the type system that underlies Haskell. System-F subsumes the HM type system in the sense that every type expressible in HM can be expressed within System-F. System-F is sometimes referred to in texts as the Girald-Reynolds polymorphic lambda calculus or second-order lambda calculus.
+{-
+
+t : t -> t -- function types
+    | a -- type variables
+    | λ a . t -- forall
+
+e : x -- variables
+    | λ(x:t).e -- value abstraction
+    | e1 e2 -- value application
+    | Λa.e -- type abstraction
+    | e_t -- type application
+
+An example with equivalents of GHC Core in comments:
+-- ref: https://stackoverflow.com/questions/6121146/reading-ghc-core
+
+
+id : ∀ t. t -> t
+id = Λt. λx:t. x
+-- id :: forall t. t -> t
+-- id = \ (@ t) (x :: t) -> x
+
+tr : ∀ a. ∀ b. a -> b -> a
+tr = Λa. Λb. λx:a. λy:b. x
+-- tr :: forall a b. a -> b -> a
+-- tr = \ (@ a) (@ b) (x :: a) (y :: b) -> x
+
+fl : ∀ a. ∀ b. a -> b -> b
+fl = Λa. Λb. λx:a. λy:b. y
+-- fl :: forall a b. a -> b -> b
+
+nil : ∀ a. [a]
+nil = Λa. Λb. λz:b. λf:(a -> b -> b). z
+-- nil :: forall a. [a]
+-- nil = \ (@ a) (@ b) (z :: b) (f :: a -> b -> b) -> z
+
+cons : ∀ a. a -> [a] -> [a]
+cons = Λa. λx:a. λxs:(∀ b. b -> (a -> b -> b) -> b).
+    Λb. λz:b. λf : (a -> b -> b). f x (xs_b z f)
+-- cons :: forall a. a -> [a] -> [a]
+-- cons = \ (@ a) (x :: a) (xs :: forall b. b -> (a -> b -> b) -> b)
+--     (@ b) (z :: b) (f :: a -> b -> b) -> f x (xs @ b z f)
+
+-}
+
+
+{-# LANGUAGE RankNTypes #-}
+-- Can't unify ( Bool ~ Char )
+rank1 :: forall a. (a -> a) -> (Bool, Char)
+rank1 f = (f True, f 'a')
+
+rank2 :: (forall a. a -> a) -> (Bool, Char)
+rank2 f = (f True, f 'a')
+
+auto :: (forall a. a -> a) -> (forall b. b -> b)
+auto x = x
+
+xauto :: forall a. (forall b. b -> b) -> a -> a
+xauto f = f
+
+-- Monomorphic Rank 0: t
+-- Polymorphic Rank 1: forall a. a -> t
+-- Polymorphic Rank 2: (forall a. a -> t) -> t
+-- Polymorphic Rank 3: ((forall a. a -> t) -> t) -> t
+
+
+-- Existential Quantification
+-- An existential type is a pair of a type and a term with a special set of packing and unpacking semantics. The type of the value encoded in the existential is known by the producer but not by the consumer of the existential value.
+
+{-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE RankNTypes #-}
+
+-- ∃ t. (t, t → t, t → String)
+data Box = forall a. Box a (a -> a) (a -> String)
+
+boxa :: Box
+boxa = Box 1 negate show
+
+boxb :: Box
+boxb = Box "foo" reverse show
+
+apply :: Box -> String
+apply (Box x f p) = p (f x)
+
+-- ∃ t. Show t => t
+data SBox = forall a. Show a => SBox a
+
+boxes :: [SBox]
+boxes = [SBox (), SBox 2, SBox "foo"]
+
+showBox :: SBox -> String
+showBox (SBox a) = show a
+
+main :: IO ()
+main = mapM_ (putStrLn . showBox) boxes
+-- ()
+-- 2
+-- "foo"
+
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ExistentialQuantification #-}
+
+-- a b are existentially bound type variables, m is a free type variable
+data MonadI m = MonadI
+  { _return :: forall a . a -> m a
+  , _bind   :: forall a b . m a -> (a -> m b) -> m b
+  }
+
+monadMaybe:: MonadI Maybe
+monadMaybe = MonadI
+  { _return = Just
+  , _bind   = \m f -> case m of
+      Nothing -> Nothing
+      Just x  -> f x
+  }
+
+
+-- Impredicative Types
+-- Although extremely brittle, GHC also has limited support for impredicative polymorphism which allows instantiating type variable with a polymorphic type. Implied is that this loosens the restriction that quantifiers must precede arrow types and now they may be placed inside of type-constructors.
+
+-- Can't unify ( Int ~ Char )
+revUni :: forall a. Maybe ([a] -> [a]) -> Maybe ([Int], [Char])
+revUni (Just g) = Just (g [3], g "hello")
+revUni Nothing = Nothing
+
+{-# LANGUAGE ImpredicativeTypes #-}
+
+-- Uses higher-ranked polymorphism.
+f :: (forall a. [a] -> a) -> (Int, Char)
+f get = (get [1,2], get ['a', 'b', 'c'])
+
+-- Uses impredicative polymorphism.
+g :: Maybe (forall a. [a] -> a) -> (Int, Char)
+g Nothing = (0, '0')
+g (Just get) = (get [1,2], get ['a','b','c'])
