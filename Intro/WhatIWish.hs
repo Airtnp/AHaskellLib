@@ -771,3 +771,179 @@ f get = (get [1,2], get ['a', 'b', 'c'])
 g :: Maybe (forall a. [a] -> a) -> (Int, Char)
 g Nothing = (0, '0')
 g (Just get) = (get [1,2], get ['a','b','c'])
+
+-- Scoped Type Variables
+-- Normally the type variables used within the toplevel signature for a function are only scoped to the type-signature and not the body of the function and its rigid signatures over terms and let/where clauses. Enabling -XScopedTypeVariables loosens this restriction allowing the type variables mentioned in the toplevel to be scoped within the value-level body of a function and all signatures contained therein.
+
+{-# LANGUAGE ExplicitForAll #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+
+poly :: forall a b c. a -> b -> c -> (a, a)
+poly x y z = (f x y, f x z)
+    where
+    -- second argument is universally quantified from inference
+    -- f :: forall t0 t1. t0 -> t1 -> t0
+    f x' _ = x'
+
+mono :: forall a b c. a -> b -> c -> (a, a)
+mono x y z = (f x y, f x z)
+    where
+    -- b is not implictly universally quantified because it is in scope
+    f :: a -> b -> a
+    f x' _ = x'
+
+-- ~: Equality constraints. Assert that two types in a context must be the same:
+-- example :: F a ~ b => a -> b
+-- Here the type "F a" must be the same as the type "b", which allows one to constrain polymorphism (especially where type families are involved), but to a lesser extent than functional dependencies. See Type Families.
+-- ref: http://blog.infinitenegativeutility.com/2017/1/haskell-type-equality-constraints
+
+-- GADT
+-- Generalized Algebraic Data types (GADTs) are an extension to algebraic datatypes that allow us to qualify the constructors to datatypes with type equality constraints, allowing a class of types that are not expressible using vanilla ADTs.
+
+-- Vanilla
+data List a
+    = Empty
+    | Cons a (List a)
+
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GADTSyntax #-}
+-- GADTSyntax
+data List a where
+    Empty :: List a
+    Cons :: a -> List a -> List a
+
+-- For example
+data Term a
+    = Lit a
+    | Succ (Term a)
+    | IsZero (Term a)
+-- we can't write
+-- eval (Succ t) = 1 + eval t
+-- also wrongly
+-- failure = Succ ( Lit True )
+
+-- Using a GADT we can express the type invariants for our language (i.e. only type-safe expressions are representable). Pattern matching on this GADTs then carries type equality constraints without the need for explicit tags.
+
+data Term a where
+    Lit :: a -> Term a
+    Succ :: Term Int -> Term Int
+    IsZero :: Term Int -> Term Bool
+    If :: Term Bool -> Term a -> Term a -> Term a
+
+eval :: Term a -> a
+eval (Lit i) = i -- Term a
+eval (Succ t) = 1 + eval t -- Term (a ~ Int)
+eval (IsZero i) = eval i == 0 -- Term (a ~ Int)
+eval (If b e1 e2) = if eval b then eval e1 else eval e2 -- Term (a ~ Bool)
+
+-- This is rejected at compile-time.
+-- failure = Succ ( Lit True )
+
+-- Explicit equality constraints (a ~ b) can be added to a function’s context.
+{-
+
+f :: a -> a -> (a, a)
+f :: (a ~ b) => a -> b -> (a,b)
+(Int ~ Int) => ...
+(a ~ Int) => ...
+(Int ~ a) => ...
+(a ~ b) => ...
+(Int ~ Bool) => ... -- Will not typecheck.
+
+This is effectively the implementation detail of what GHC is doing behind the scenes to implement GADTs ( implicitly passing and threading equality terms around ). If we wanted we could do the same setup that GHC does just using equality constraints and existential quantification. Indeed, the internal representation of GADTs is as regular algebraic datatypes that carry coercion evidence as arguments.
+
+-- Using Constraints
+data Exp a
+    = (a ~ Int) => LitInt a
+    | (a ~ Bool) => LitBool a
+    | forall b. (b ~ Bool) => If (Exp b) (Exp a) (Exp a)
+
+-- Using GADTs
+-- data Exp a where
+    -- LitInt :: Int -> Exp Int
+    -- LitBool :: Bool -> Exp Bool
+    -- If :: Exp Bool -> Exp a -> Exp a -> Exp a
+
+eval :: Exp a -> a
+eval e = case e of
+    LitInt i -> i
+    LitBool b -> b
+    If b tr fl -> if eval b then eval tr else eval fl
+
+data T :: * -> * where
+    T1 :: Int -> T Int
+    T2 :: T a
+
+f (T1 n) = [n]
+f T2 = []
+
+-}
+
+-- Kind Signatures
+{-
+
+κ : *
+  | κ -> κ
+
+Int :: *
+Maybe :: * -> *
+Either :: * -> * -> *
+
+-}
+
+-- With the KindSignatures extension enabled we can now annotate top level type signatures with their explicit kinds, bypassing the normal kind inference procedures.
+
+{-# Language GADTs #-}
+{-# LANGUAGE KindSignatures #-}
+
+data Term a :: * where
+  Lit    :: a -> Term a
+  Succ   :: Term Int -> Term Int
+  IsZero :: Term Int -> Term Bool
+  If     :: Term Bool -> Term a -> Term a -> Term a
+
+data Vec :: * -> * -> * where
+  Nil :: Vec n a
+  Cons :: a -> Vec n a -> Vec n a
+
+data Fix :: (* -> *) -> * where
+  In :: f (Fix f) -> Fix f
+
+
+-- Void
+{-
+
+Using a newtype wrapper we can create a type where recursion makes it impossible to construct an inhabitant.
+
+-- Void :: Void -> Void
+newtype Void = Void Void
+
+Or using -XEmptyDataDecls we can also construct the uninhabited type equivalently as a data declaration with no constructors.
+
+data Void
+The only inhabitant of both of these types is a diverging term like (undefined).
+
+
+-}
+
+-- Type Inhabitation
+-- ref: https://www.zhihu.com/question/41925054
+
+-- Phantom Type
+
+
+-- Interpreters
+
+-- Lambda Calculus
+-- A lambda expression in which all variables that appear in the body of the expression are referenced in an outer lambda binder is said to be closed while an expression with unbound free variables is open.
+
+type Name = String
+
+data Exp
+    = Var Name
+    | Lam Name Exp
+    | App Exp Exp
+
+-- HOAS
+-- Higher Order Abstract Syntax (HOAS) is a technique for implementing the lambda calculus in a language where the binders of the lambda expression map directly onto lambda binders of the host language ( i.e. Haskell ) to give us substitution machinery in our custom language by exploiting Haskell's implementation.
+
