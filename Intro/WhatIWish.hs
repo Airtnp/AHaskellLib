@@ -947,3 +947,78 @@ data Exp
 -- HOAS
 -- Higher Order Abstract Syntax (HOAS) is a technique for implementing the lambda calculus in a language where the binders of the lambda expression map directly onto lambda binders of the host language ( i.e. Haskell ) to give us substitution machinery in our custom language by exploiting Haskell's implementation.
 
+
+-- Testing
+-- Quickcheck
+
+quickCheck :: Testable prop => prop -> IO ()
+(==>) :: Testable prop => Bool -> prop -> Property
+forAll :: (Show a, Testable prop) => Gen a -> (a -> prop) -> Property
+choose :: Random a => (a, a) -> Gen a
+
+-- data generator:
+-- class Arbitrary
+
+-- SmallCheck/QuickCheck/Criterion/Tasty/silently
+
+
+-- Type families
+-- Resolution of vanilla Haskell 98 typeclasses proceeds via very simple context reduction that minimizes interdependency between predicates, resolves superclasses, and reduces the types to head normal form. For example:
+
+-- (Eq [a], Ord [a]) => [a]
+-- ==> Ord a => [a]
+
+-- If a single parameter typeclass expresses a property of a type ( i.e. it's in a class or not in class ) then a multiparameter typeclass expresses relationships between types. For example if we wanted to express the relation a type can be converted to another type we might use a class like:
+
+{-# LANGUAGE MultiParamTypeClasses #-}
+
+import Data.Char
+
+class Convertible a b where
+  convert :: a -> b
+
+instance Convertible Int Integer where
+  convert = toInteger
+
+instance Convertible Int Char where
+  convert = chr
+
+instance Convertible Char Int where
+  convert = ord
+
+-- Of course now our instances for Convertible Int are not unique anymore, so there no longer exists a nice procedure for determining the inferred type of b from just a. To remedy this let's add a functional dependency a -> b, which tells GHC that an instance a uniquely determines the instance that b can be. So we'll see that our two instances relating Int to both Integer and Char conflict.
+
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FunctionalDependencies #-}
+
+
+import Data.Char
+
+class Convertible a b | a -> b where
+  convert :: a -> b
+
+instance Convertible Int Char where
+  convert = chr
+
+instance Convertible Char Int where
+  convert = ord
+
+-- Functional dependencies conflict between instance declarations:
+  -- instance Convertible Int Integer
+  -- instance Convertible Int Char
+
+-- Now there's a simpler procedure for determining instances uniquely and multiparameter typeclasses become more usable and inferable again. Effectively a functional dependency | a -> b says that we can't define multiple multiparamater typeclass instances with the same a but different b.
+
+-- Now let's make things not so simple. Turning on UndecidableInstances loosens the constraint on context reduction that can only allow constraints of the class to become structural smaller than its head. As a result implicit computation can now occur within in the type class instance search. Combined with a type-level representation of Peano numbers we find that we can encode basic arithmetic at the type-level.
+
+-- Injectivity
+-- The type level functions defined by type-families are not necessarily injective, the function may map two distinct input types to the same output type. This differs from the behavior of type constructors ( which are also type-level functions ) which are injective.
+
+data Maybe a = Nothing | Just a
+-- Maybe a ~ Maybe b  implies  a ~ b
+
+type instance F Int = Bool
+type instance F Char = Bool
+
+-- F a ~ F b does not imply  a ~ b, in general
+
