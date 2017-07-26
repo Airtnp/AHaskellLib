@@ -1022,3 +1022,33 @@ type instance F Char = Bool
 
 -- F a ~ F b does not imply  a ~ b, in general
 
+-- NonEmpty
+-- Rather than having degenerate (and often partial) cases of many of the Prelude functions to accommodate the null case of lists, it is sometimes preferable to statically enforce empty lists from even being constructed as an inhabitant of a type.
+
+infixr 5 :|, <|
+data NonEmpty a = a :| [a]
+
+head :: NonEmpty a -> a
+toList :: NonEmpty a -> [a]
+fromList :: [a] -> NonEmpty a
+head :: NonEmpty a -> a
+head ~(a :| _) = a
+import Data.List.NonEmpty
+import Prelude hiding (head, tail, foldl1)
+import Data.Foldable (foldl1)
+
+a :: NonEmpty Integer
+a = fromList [1,2,3]
+-- 1 :| [2,3]
+
+b :: NonEmpty Integer
+b = 1 :| [2,3]
+-- 1 :| [2,3]
+
+c :: NonEmpty Integer
+c = fromList []
+-- *** Exception: NonEmpty.fromList: empty list
+
+d :: Integer
+d = foldl1 (+) $ fromList [1..100]
+-- 5050

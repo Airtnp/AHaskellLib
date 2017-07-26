@@ -59,5 +59,6 @@ data Mu (f :: (k -> *) -> k -> *) (a :: k) = Roll (f (Mu f) a)
 
 type role Proxy phantom
 data Proxy (a :: k) = Proxy
+
 coerce :: Coercible * a b => a -> b
 class (~R#) k k a b => Coercible k a b
