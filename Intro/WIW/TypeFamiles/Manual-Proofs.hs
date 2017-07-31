@@ -69,3 +69,19 @@ plus_zero :: forall n. SNat n
          -> Eql (Add Z n) n
 plus_zero Zero = Refl
 plus_zero (Succ n) = cong (plus_zero n)
+
+-- Using the TypeOperators extension we can also use infix notation at the type-level.
+
+data a :=: b where
+  Refl :: a :=: a
+
+cong :: a :=: b -> (f a) :=: (f b)
+cong Refl = Refl
+
+type family (n :: Nat) :+ (m :: Nat) :: Nat
+type instance Zero     :+ m = m
+type instance (Succ n) :+ m = Succ (n :+ m)
+
+plus_suc :: forall n m. SNat n -> SNat m -> (n :+ (S m)) :=: (S (n :+ m))
+plus_suc Zero m = Refl
+plus_suc (Succ n) m = cong (plus_suc n m)

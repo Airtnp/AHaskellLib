@@ -1052,3 +1052,48 @@ c = fromList []
 d :: Integer
 d = foldl1 (+) $ fromList [1..100]
 -- 5050
+
+-- TypeFamilyDependencies
+
+-- Type families historically have not been injective, i.e. they are not guaranteed to maps distinct elements of its arguments to the same element of its result. The syntax is similar to the multiparmater typeclass functional dependencies in that the resulting type is uniquely determined by a set of the type families parameters.
+
+{-# LANGUAGE XTypeFamilyDependencies #-}
+
+type family F a b c = (result :: k) | result -> a b c
+type instance F Int  Char Bool = Bool
+type instance F Char Bool Int  = Int
+type instance F Bool Int  Char = Char
+
+
+
+-- Promotion
+-- Higher Kinded Types
+
+{-
+
+What are higher kinded types?
+
+The kind system in Haskell is unique by contrast with most other languages in that it allows datatypes to be constructed which take types and type constructor to other types. Such a system is said to support higher kinded types.
+
+All kind annotations in Haskell necessarily result in a kind * although any terms to the left may be higher-kinded (* -> *).
+
+The common example is the Monad which has kind * -> *. But we have also seen this higher-kindedness in free monads.
+
+-}
+
+data Free f a where
+  Pure :: a -> Free f a
+  Free :: f (Free f a) -> Free f a
+
+data Cofree f a where
+  Cofree :: a -> f (Cofree f a) -> Cofree f a
+
+Free :: (* -> *) -> * -> *
+Cofree :: (* -> *) -> * -> *
+
+-- For instance Cofree Maybe a for some monokinded type a models a non-empty list with Maybe :: * -> *.
+
+-- Cofree Maybe a is a non-empty list
+testCofree :: Cofree Maybe Int
+testCofree = (Cofree 1 (Just (Cofree 2 Nothing)))
+
