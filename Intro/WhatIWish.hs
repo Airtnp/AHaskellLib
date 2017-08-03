@@ -1097,3 +1097,67 @@ Cofree :: (* -> *) -> * -> *
 testCofree :: Cofree Maybe Int
 testCofree = (Cofree 1 (Just (Cofree 2 Nothing)))
 
+-- Generics
+
+-- Typeable
+-- The Typeable class be used to create runtime type information for arbitrary types.
+
+cast :: (Typeable a, Typeable b) => a -> Maybe b
+cast x
+  | typeOf x == typeOf ret = Just ret
+  | otherwise = Nothing
+  where
+    ret = unsafeCast x
+
+-- Dynamic
+-- Since we have a way of querying runtime type information we can use this machinery to implement a Dynamic type. This allows us to box up any monotype into a uniform type that can be passed to any function taking a Dynamic type which can then unpack the underlying value in a type-safe way.
+
+toDyn :: Typeable a => a -> Dynamic
+fromDyn :: Typeable a => Dynamic -> a -> a
+fromDynamic :: Typeable a => Dynamic -> Maybe a
+cast :: (Typeable a, Typeable b) => a -> Maybe b
+
+-- Use of Dynamic is somewhat rare, except in odd cases that have to deal with foreign memory and FFI interfaces. Using it for business logic is considered a code smell. Consider a more idiomatic solution.
+
+
+-- Syb
+-- Using the interface provided by the Data we can retrieve the information we need to, at runtime, inspect the types of expressions and rewrite them, collect terms, and find subterms matching specific predicates.
+
+everywhere :: (forall a. Data a => a -> a) -> forall a. Data a => a -> a
+everywhereM :: Monad m => GenericM m -> GenericM m
+somewhere :: MonadPlus m => GenericM m -> GenericM m
+listify :: Typeable r => (r -> Bool) -> GenericQ [r]
+everything :: (r -> r -> r) -> GenericQ r -> GenericQ r
+
+-- For example consider we have some custom collection of datatypes for which we want to write generic transformations that transform numerical subexpressions according to set of rewrite rules. We can use syb to write the transformation rules quite succinctly.
+
+{-# LANGUAGE DeriveDataTypeable #-}
+
+import Data.Data
+import Data.Typeable
+import Data.Generics.Schemes
+import Data.Generics.Aliases (mkT)
+
+data MyTuple a = MyTuple a Float
+  deriving (Data, Typeable, Show)
+
+exampleT :: Data a => MyTuple a -> MyTuple a
+exampleT = everywhere (mkT go1) . everywhere (mkT go2)
+  where
+    go1 :: Int -> Int
+    go1 x = succ x
+
+    go2 :: Float -> Float
+    go2 x = succ x
+
+findFloat :: Data x => x -> Maybe Float
+findFloat = gfindtype
+
+main :: IO ()
+main = do
+  let term = MyTuple (MyTuple (1 :: Int) 2.0) 3.0
+  print (exampleT term)
+  print (gsize term)
+  print (findFloat term)
+  print (listify ((>0) :: (Int -> Bool)) term)
+

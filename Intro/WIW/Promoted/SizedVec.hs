@@ -82,6 +82,8 @@ example1 = head' (1 `Cons` (2 `Cons` Nil))
 -- Cannot match type Empty with NonEmpty
 example2 :: Int
 example2 = head' Nil
-Couldn't match type None with Many
-Expected type: List NonEmpty Int
-  Actual type: List Empty Int
+
+-- Couldn't match type None with Many
+-- Expected type: List NonEmpty Int
+  -- Actual type: List Empty Int
+
