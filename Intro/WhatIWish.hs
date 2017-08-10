@@ -1161,3 +1161,21 @@ main = do
   print (findFloat term)
   print (listify ((>0) :: (Int -> Bool)) term)
 
+-- Numeric Tower
+
+{-
+
+	    Double	        Float	        Int	        Word	        Integer	        Rational
+Double	id	            fromRational	truncate	truncate	               truncate	    toRational
+Float	fromRational	id	            truncate	truncate	               truncate	    toRational
+Int	    fromIntegral	fromIntegral	id	        fromIntegral	           fromIntegral	fromIntegral
+Word	fromIntegral	fromIntegral	fromIntegralid	                       fromIntegral	fromIntegral
+Integer	fromIntegral	fromIntegral	fromIntegralfromIntegral	           id	            fromIntegral
+RationalfromRatoinal	fromRational	truncate	truncate	               truncate	    id
+
+
+-}
+
+-- STM
+-- Monad Par
+-- async
