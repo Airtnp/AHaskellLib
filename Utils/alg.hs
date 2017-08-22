@@ -17,7 +17,7 @@ min_sub_list xs m = init_sum + min_diff
 qsort :: Ord a => [a] -> [a]
 qsort [] = []
 qsort (x:xs) = qsort (filter (<x) xs) ++ [x] ++ qsort (filter (>=x) xs)
-
+-- or filter (==x) and filter (>x)
 
 -- simple O(n) Euler sieve
 primes = sieve [2..]
