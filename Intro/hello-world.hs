@@ -1547,6 +1547,13 @@ localT f m = ReaderT $ \r -> runReaderT m (f r)
 
 -- data family T a
 -- data instance T Int = T1 Int | T2 Bool (T2 Bool :: T Int)
+-- 对类型特化构造器
+
+-- type family S a
+-- type family S Int = Bool
+-- type family S Char = Char
+-- type function as synonym
+
 
 -- data T ... where
         -- C1 ... :: T ...

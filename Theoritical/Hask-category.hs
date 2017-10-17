@@ -7,6 +7,7 @@
 --     : https://en.wikibooks.org/wiki/Haskell/Category_theory
 --     : http://science.raphael.poss.name/categories-from-scratch.html
 --     : https://www.zhihu.com/question/60402335/answer/175679814
+--     : https://www.zhihu.com/question/65645659
 
 module Hask where
 
@@ -25,6 +26,7 @@ instance Category (->) where
     id = GHC.Base.id -- Prelude.id
     (.) = (GHC.Base..) -- (Prelude..)
 
+-- Arrow
 -- | Right-to-left composition
 (<<<) :: Category cat => cat b c -> cat a b -> cat a c
 (<<<) = (.)
@@ -475,3 +477,8 @@ instance Monad m => Arrow (Kleisli m) where
         -- Functions are instances of the type class
         -- Instance type denotes the semantic domain of AST
         -- 指称语义
+
+-- Kan extension
+data Lan k f a = forall b. Lan (k b -> a) (f b)
+
+newtype Ran k f a = Ran { runRan :: forall b. (a -> k b) -> f b }

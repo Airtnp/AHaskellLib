@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module Y where
 
 newtype Rec a = Rec { recOut :: Rec a -> a }
