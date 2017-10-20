@@ -28,7 +28,7 @@ mkFreshVarName x ctx@(c:cs)
 termPrint ctx t = case t of
     TmVar n _ -> getVarName n ctx
     TmAbs s t1 -> let (s', ctx') = pkFreshVarName s ctx in
-        "(\\" ++ s' ++ ". " ++ termPrint ctx' t1 ++ ")"
+        "(λ" ++ s' ++ " -> " ++ termPrint ctx' t1 ++ ")"
     TmApp t1 t2 -> 
         "(" ++ termPrint ctx t1 ++ " " ++ termPrint ctx t2 ++ ")"
     
@@ -36,15 +36,15 @@ termPrint ctx t = case t of
 termShift d t = walk 0 t where
     walk :: Int -> Term -> Term
     walk c t' = case t' of
-        TmVar i n   -> if i >= c then TmVar (i+d) (n+d) else TmVar i (n+d)
-        TmAbs s t1  -> TmAbs s $ walk (c+1) t1
+        TmVar i n   -> if i >= c then TmVar (i + d) (n + d) else TmVar i (n + d)
+        TmAbs s t1  -> TmAbs s $ walk (c + 1) t1
         TmApp t1 t2 -> TmApp (walk c t1) (walk c t2)
 
 -- [j -> s]t
 termSubst j s t = walk 0 t where
     walk c t' = case t' of
         TmVar i n   -> if i == (j + c) then termShift c s else TmVar i n
-        TmAbs s t1  -> TmAbs s $ walk (c+1) t1
+        TmAbs s t1  -> TmAbs s $ walk (c + 1) t1
         TmApp t1 t2 -> TmApp (walk c t1) (walk c t2)
 
 -- beta reduction
