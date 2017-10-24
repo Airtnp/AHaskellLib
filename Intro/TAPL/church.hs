@@ -14,7 +14,7 @@ churchZero = \s -> \z -> z
 churchSucc = \n -> \s -> \z -> s (n s z)
 churchOne = churchSucc churchZero
 
-churchPlus = \m -> \n -> \s -> \z -> m s (n s z)
+churchPlus = \m -> \n -> \s -> \z -> m s (n s z)        -- \m -> \f -> \n -> \z ==> fix (churchPlus churchZero) $ churchOne == churchOne
 churchMul = \m -> \n -> m (churchPlus n) churchZero
 churchIsZero = \m -> m (\x -> churchFalse) churchTrue
 churchExp = \m -> \n -> \s -> \z -> (\s' -> m n s') s z

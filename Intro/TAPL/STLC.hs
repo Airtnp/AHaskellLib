@@ -16,7 +16,8 @@ data Type =
     | TyError
     deriving(Eq)
     -- TyRecord [Type]
-    -- TyAdd [Type]                -- A | B
+    -- TyVariant [Type]            -- A | B
+    -- TyList Type
 
 instance Show Type where
     show TyUnit = "Unit"
@@ -44,7 +45,10 @@ data Term =
     deriving (Eq, Show)
     -- TmRecord [(String, Term)]
     -- TmRecProj String Term
-
+    -- TmVariant Int Term           -- eg. Option<T> = {none: Unit, some: T}
+    -- TmFix Term                   -- [x -> fix(\x:T.t2)]t2
+    -- TmNil
+    -- TmCons Term Term
 
 data TypeError = 
     NoError
