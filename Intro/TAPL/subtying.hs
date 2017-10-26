@@ -623,7 +623,7 @@ typeOf ctx t = case t of
         TyVariant ftys -> let tyTiExpected = lookup li ftys
                               tyTi = typeOf ctx ti
                           in case tyTiExpected of
-                            Nothing -> (error "Label " ++ li ++ " not found")
+                            Nothing    -> (error $ "Label " ++ li ++ " not found")
                             Just tyTie -> if subtype ctx tyTi tyTie
                                             then tyT
                                             else (error "Field does not have expected type")
@@ -643,7 +643,7 @@ typeOf ctx t = case t of
         TyRef tyT1  -> if subtype ctx (typeOf ctx t2) tyT1
                         then TyUnit
                         else (error "Arguments of := are incompatible")
-        TyBot       -> let _ = typeOf ctx c2 in TyBot
+        TyBot       -> let _ = typeOf ctx t2 in TyBot
         TySink tyT1 -> if subtype ctx (typeOf ctx t2) tyT1
                         then TyUnit
                         else (error "Arguments of := are incompatible")
@@ -667,17 +667,17 @@ typeOf ctx t = case t of
     TmSucc t1   -> if subtype ctx (typeOf ctx t1) TyNat
                     then TyNat
                     else (error "Argument of succ is not a number")
-    TmPred t1   -> if subtype ctx (typeOf ctx t2) TyNat
+    TmPred t1   -> if subtype ctx (typeOf ctx t1) TyNat
                     then TyNat
                     else (error "Argument of pred is not a number")
-    TmIsZero t1 -> if subtype ctx (typeOf ctx t2) TyNat
+    TmIsZero t1 -> if subtype ctx (typeOf ctx t1) TyNat
                     then TyBool
                     else (error "Argument of iszero is not a number")
     TmPack tyT1 t2 tyT -> case simplifyTy ctx tyT of
         TySome tyY tyBound tyT2 -> if not $ subtype ctx tyT1 tyBound
                                     then (error "Hidden type not a subtype of bound")
                                     else let tyU = typeOf ctx t2
-                                             tyU' = typeOf typeSubstTop tyT1 tyT2
+                                             tyU' = typeSubstTop tyT1 tyT2
                                     in if subtype ctx tyU tyU'
                                         then tyT
                                         else (error "Doesn't match declared type")
