@@ -1,9 +1,15 @@
 -- ref: https://www.cis.upenn.edu/~bcpierce/tapl/checkers/fullfsub/syntax.ml
 -- TODO: the error handling is shit. Try replace everything by Either Type/Term Error
+-- TODO: add Kind system
 import Data.Maybe
 import Data.List
 import Control.Exception
 import System.IO.Unsafe
+
+data Kind = 
+    KnStar
+    | KnArr Kind Kind
+
 data Type = 
     TyVar Int Int
     | TyId String
@@ -18,11 +24,13 @@ data Type =
     | TyFloat
     | TyNat    
     | TyBool    
-    | TyAll String Type Type        -- forall a.
-    | TySome String Type Type       -- exist a.
+    | TyAll String Type Type        -- forall a. (better TyAll String Kind Type)
+    | TySome String Type Type       -- exist a. (better TySome String Kind Type)
     | TySource Type
     | TySink Type
     deriving(Eq, Show)
+    -- TyAbs String Kind Type
+    -- TyApp Type Type              -- Type operations
 
 data Term = 
     TmVar Int Int                   -- Γ⊢a
@@ -58,12 +66,13 @@ data Term =
     | TmTry Term Term
     | TmLoc Int
     deriving(Eq, Show)
+    -- TmUpdate Term String Term
     
 data Binding = 
     NameBinding
     | TyVarBinding Type
     | VarBinding Type
-    | TyAbbBinding Type
+    | TyAbbBinding Type             -- Or TyAbbBinding Type (Maybe Kind)
     | TmAbbBinding Term (Maybe Type)
     deriving(Eq, Show)
     
