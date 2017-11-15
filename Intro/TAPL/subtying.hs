@@ -1,6 +1,7 @@
 -- ref: https://www.cis.upenn.edu/~bcpierce/tapl/checkers/fullfsub/syntax.ml
 -- TODO: the error handling is shit. Try replace everything by Either Type/Term Error
 -- TODO: add Kind system
+-- Fullformsub is the ultra in TAPL: https://www.cis.upenn.edu/~bcpierce/tapl/checkers/fullfomsub/
 import Data.Maybe
 import Data.List
 import Control.Exception
@@ -18,15 +19,15 @@ data Type =
     | TyArr Type Type
     | TyRecord [(String, Type)]
     | TyVariant [(String, Type)]
-    | TyRef Type
+    | TyRef Type                    -- invariant subtyping
     | TyString
     | TyUnit
     | TyFloat
     | TyNat    
     | TyBool    
-    | TyAll String Type Type        -- forall a. (better TyAll String Kind Type)
-    | TySome String Type Type       -- exist a. (better TySome String Kind Type)
-    | TySource Type
+    | TyAll String Type Type        -- forall X <: T. (better TyAll String Kind Type)
+    | TySome String Type Type       -- exist X <: T. (better TySome String Kind Type)
+    | TySource Type                 -- covariant subtyping
     | TySink Type
     deriving(Eq, Show)
     -- TyAbs String Kind Type
@@ -50,15 +51,15 @@ data Term =
     | TmFix Term                    -- fix \x:T1 t2 === [x -> fix \x:T1 t2]t2
     | TmAscribe Term Type           -- as
     | TmTimesFloat Term Term
-    | TmTAbs String Type Term
-    | TmTApp Term Type
+    | TmTAbs String Type Term       -- type application t[T]
+    | TmTApp Term Type              -- type abstraction (\lambda X.t) # X:type
     | TmZero
     | TmSucc Term 
     | TmPred Term
     | TmIsZero Term
     | TmInert Type
-    | TmPack Type Term Type
-    | TmUnpack String String Term Term
+    | TmPack Type Term Type         -- {*T, t} as T
+    | TmUnpack String String Term Term -- let {X, x} = t1 in t2
     | TmRef Term
     | TmDeref Term
     | TmAssign Term Term
@@ -70,10 +71,10 @@ data Term =
     
 data Binding = 
     NameBinding
-    | TyVarBinding Type
+    | TyVarBinding Type                 -- \Gamma, x : T
     | VarBinding Type
-    | TyAbbBinding Type             -- Or TyAbbBinding Type (Maybe Kind)
-    | TmAbbBinding Term (Maybe Type)
+    | TyAbbBinding Type             -- Or TyAbbBinding Type (Maybe Kind) \Gamma, X
+    | TmAbbBinding Term (Maybe Type)    
     deriving(Eq, Show)
     
 type Context = [(String, Binding)]
@@ -397,7 +398,7 @@ evalBinding ctx store b = case b of
         (TmAbbBinding t' tyT, store')
     bind               -> (bind, store)
 
-promote ctx t = case t of
+promote ctx t = case t of                               -- \Gamma |- S ⇑ T (T是S的最小不变超类型)
     TyVar i _ -> case getBinding ctx i of
         TyVarBinding tyT -> tyT
         _                -> (error "No Rule Applies")
