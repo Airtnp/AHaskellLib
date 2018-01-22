@@ -73,9 +73,10 @@
 -- Lambda Cube
     -- ref: https://cs.stackexchange.com/questions/49189/what-terms-type-systems-exclude/49381#49381
     -- ref: https://cstheory.stackexchange.com/questions/36054/how-do-you-get-the-calculus-of-constructions-from-the-other-points-in-the-lambda/36058#36058
+    -- ref: https://stackoverflow.com/questions/21219773/are-ghcs-type-famlies-an-example-of-system-f-omega
     -- terms depend on terms (normal functional programming) \x -> x
     -- terms depend on types (polymorphism) Head : [X] -> X
-    -- types depend on types (type operator / type families) List<T> : X -> [X]
+    -- types depend on types (type operator / type families) List<T> : X -> [X] K1 -> K2
     -- types depend on terms (dependent types) Array<U, N> : N -> U^N
 
     -- λ→ (Simply-typed lambda calculus)
@@ -84,6 +85,7 @@
     -- λ2 (System F: STLC + poly)
         -- ∀a:k. A
         -- Λa:k. e + e [A]
+        -- can represent \x. x x
     -- λω (System F-omega: STLC + poly(parametric) + type operator)
     -- λP (LF: STLC + dependent type)
         -- Πx:A. B(x) (arugment in return type)

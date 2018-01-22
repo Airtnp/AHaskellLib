@@ -1,2 +1,3 @@
-# Freshman_Simple_Haskell_Lib
-Some freshman's simple haskell code
+# AHaskellLib
+
+A Haskell lib recording my learning and some utilties.
